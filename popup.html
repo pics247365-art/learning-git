@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>RTL Adaptive</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="brand__dot"></div>
+        <div class="brand__text">RTL Adaptive</div>
+      </div>
+      <div class="header__host" id="host-label">—</div>
+    </header>
+
+    <section class="list" id="list">
+      <!-- blocks rendered here -->
+    </section>
+
+    <section class="empty" id="empty" hidden>
+      <div class="empty__title">No blocks on this site yet</div>
+      <div class="empty__sub">Use "Pick a block" to add one.</div>
+    </section>
+
+    <section class="actions">
+      <button class="btn btn--primary" id="pick-btn">
+        <span class="btn__icon">＋</span>
+        <span>Pick a block on this page</span>
+      </button>
+
+      <div class="actions__row">
+        <button class="btn btn--ghost" id="export-btn">Export</button>
+        <button class="btn btn--ghost" id="import-btn">Import</button>
+        <input type="file" id="import-file" accept="application/json" hidden />
+      </div>
+    </section>
+
+    <!-- Export modal -->
+    <div class="modal" id="export-modal" hidden>
+      <div class="modal__box">
+        <div class="modal__title">Export blocks</div>
+        <div class="modal__sub">Select which domains to include:</div>
+        <div class="modal__list" id="export-domains"></div>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" data-close="export-modal">Cancel</button>
+          <button class="btn btn--primary" id="export-confirm">Download</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import modal -->
+    <div class="modal" id="import-modal" hidden>
+      <div class="modal__box">
+        <div class="modal__title">Import blocks</div>
+        <div class="modal__sub">Select which domains to import:</div>
+        <div class="modal__list" id="import-domains"></div>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" data-close="import-modal">Cancel</button>
+          <button class="btn btn--primary" id="import-confirm">Import</button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="footer">Created by Lidor Mashiach</footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
