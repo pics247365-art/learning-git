@@ -79,7 +79,7 @@ Single self-contained HTML file (~310 KB, large due to the embedded base64 JPEG)
 - 8×8 grid (64 pieces) built from an embedded base64 image of Roxy.
 - Tap to select (gold outline), tap another piece to swap.
 - "📷 תמונה שלי" replaces the image from the device gallery.
-- To update the photo: `base64 -w 0 photo.jpg` and replace the `ROXY_B64` constant in the `<script>` block.
+- To update the photo: `base64 -w 0 photo.jpg` and replace the `B64` constant (line 136) in the `<script>` block.
 
 ---
 
