@@ -1,0 +1,32 @@
+{
+  "api_type": "simulate",
+  "whatsapp_token": "",
+  "phone_number_id": "",
+  "recipients": [
+    "+972501234567"
+  ],
+  "scheduled_tasks": [
+    {
+      "phone": "+972501234567",
+      "time": "08:00",
+      "message_type": "time",
+      "comment": "הודעת בוקר"
+    },
+    {
+      "phone": "+972501234567",
+      "time": "12:30",
+      "message_type": "random",
+      "comment": "עידוד בצהריים"
+    },
+    {
+      "phone": "+972501234567",
+      "time": "21:00",
+      "message_type": "time",
+      "comment": "הודעת ערב"
+    }
+  ],
+  "contacts": [
+    {"name": "יוסי", "phone": "+972501234567"},
+    {"name": "דינה", "phone": "+972521234567"}
+  ]
+}
