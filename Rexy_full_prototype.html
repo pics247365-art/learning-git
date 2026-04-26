@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>פאזל רקסי – גרסה מלאה</title>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 8px 32px;
+      overflow-x: hidden;
+    }
+
+    .header { text-align:center; margin-bottom:10px; color:#fff; }
+    .header h1 {
+      font-size:28px; font-weight:900;
+      background: linear-gradient(90deg,#fff 0%,#ffd700 50%,#fff 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+    }
+    .header p { font-size:13px; color:rgba(255,255,255,.7); margin-top:3px; }
+
+    .stats {
+      display:flex; gap:16px;
+      background:rgba(255,255,255,.1); backdrop-filter:blur(10px);
+      border:1px solid rgba(255,255,255,.15); border-radius:20px;
+      padding:8px 22px; margin-bottom:10px;
+      color:#fff; font-weight:700; font-size:13px;
+    }
+    .stats span { display:flex; align-items:center; gap:5px; }
+
+    .difficulty {
+      display:flex; gap:6px; margin-bottom:10px;
+    }
+    .diff-btn {
+      padding:5px 14px;
+      border:1px solid rgba(255,255,255,.25);
+      border-radius:14px;
+      background:rgba(255,255,255,.1);
+      color:#fff; font-size:12px; font-weight:700;
+      cursor:pointer; transition:all .15s;
+    }
+    .diff-btn.active {
+      background:linear-gradient(135deg,#ffd700,#ff9a56);
+      border-color:transparent;
+      color:#1a1a2e;
+    }
+
+    /* Upload screen */
+    #upload-screen {
+      display:flex; flex-direction:column;
+      align-items:center; gap:20px;
+      padding:30px 20px; text-align:center;
+    }
+    .upload-zone {
+      width:220px; height:220px;
+      border:2px dashed rgba(255,215,0,.5);
+      border-radius:20px;
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:12px;
+      cursor:pointer;
+      background:rgba(255,255,255,.05);
+      transition:all .2s; color:#fff;
+    }
+    .upload-zone:hover { background:rgba(255,255,255,.12); border-color:#ffd700; }
+    .upload-zone .icon { font-size:52px; }
+    .upload-zone p { font-size:14px; color:rgba(255,255,255,.8); line-height:1.5; }
+
+    /* Game layout */
+    #game-area {
+      display:none; gap:10px;
+      align-items:flex-start; justify-content:center;
+      width:100%; max-width:520px;
+    }
+
+    .side {
+      display:flex; flex-direction:column; gap:8px; align-items:stretch;
+      min-width:84px;
+    }
+
+    .preview-wrap {
+      background:rgba(255,255,255,.1); border-radius:10px;
+      padding:6px; border:1px solid rgba(255,255,255,.15);
+    }
+    .preview-label { font-size:9px; color:rgba(255,255,255,.65); text-align:center; margin-bottom:4px; }
+    #preview { display:block; width:72px; height:72px; border-radius:6px; }
+
+    .btn {
+      padding:9px 8px; border:none; border-radius:12px;
+      font-size:12px; font-weight:700; cursor:pointer;
+      transition:transform .1s, filter .1s;
+      display:flex; align-items:center; gap:5px; justify-content:center;
+      white-space:nowrap;
+    }
+    .btn:active { transform:scale(.95); }
+    .btn:disabled { opacity:.4; cursor:default; transform:none; }
+    .btn-shuffle { background:linear-gradient(135deg,#ff6b35,#ff9a56); color:#fff; }
+    .btn-hint    { background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.25); }
+    .btn-undo    { background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
+    .btn-photo   { background:linear-gradient(135deg,#4f8ef7,#7b5ea7); color:#fff; }
+
+    .board-col { display:flex; flex-direction:column; align-items:center; gap:0; }
+
+    #grid {
+      display:grid; background:#111;
+      border:2px solid rgba(255,215,0,.4); border-radius:8px;
+      overflow:hidden; touch-action:manipulation; user-select:none;
+      box-shadow:0 0 30px rgba(255,215,0,.15);
+    }
+
+    .piece {
+      cursor:pointer; overflow:hidden;
+      transition:transform .12s, outline .1s;
+      position:relative;
+    }
+    .piece canvas { display:block; width:100%; height:100%; pointer-events:none; }
+    .piece.selected {
+      outline:3px solid #FFD700; outline-offset:-2px;
+      z-index:5; transform:scale(1.06); filter:brightness(1.18);
+    }
+    .piece.correct {
+      outline:2px solid rgba(80,255,130,.7); outline-offset:-2px;
+    }
+    .piece.drag-over {
+      outline:3px solid #00cfff; outline-offset:-2px;
+      transform:scale(1.06);
+    }
+    .piece.dragging { opacity:.35; }
+    .piece[draggable="true"] { cursor:grab; }
+    .piece[draggable="true"]:active { cursor:grabbing; }
+
+    .prog-wrap {
+      width:100%; height:6px;
+      background:rgba(255,255,255,.15); border-radius:3px;
+      margin-top:8px; overflow:hidden;
+    }
+    #prog {
+      height:100%; background:linear-gradient(90deg,#ffd700,#ff9a56);
+      border-radius:3px; transition:width .35s;
+      width:0%;
+    }
+
+    /* Win overlay */
+    #win {
+      position:fixed; inset:0; background:rgba(0,0,0,.88);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .4s; z-index:99;
+    }
+    #win.show { opacity:1; pointer-events:all; }
+    .win-box {
+      background:linear-gradient(145deg,#1a1a2e,#16213e);
+      border:1px solid rgba(255,215,0,.35); border-radius:24px;
+      padding:32px 28px; text-align:center; max-width:300px; width:90%;
+    }
+    .win-box .emo { font-size:60px; }
+    .win-box h2 { font-size:26px; font-weight:900; color:#ffd700; margin:10px 0 6px; }
+    #win-img { width:120px; height:120px; border-radius:12px; margin:10px auto; display:block; border:2px solid rgba(255,215,0,.4); }
+    #win-info { color:rgba(255,255,255,.75); font-size:13px; margin-bottom:20px; line-height:1.7; }
+    .win-btn {
+      background:linear-gradient(135deg,#ff6b35,#ff9a56);
+      color:#fff; border:none; border-radius:22px;
+      padding:12px 30px; font-size:15px; font-weight:700; cursor:pointer;
+    }
+
+    /* Confetti */
+    .confetti-piece {
+      position:fixed; border-radius:2px;
+      pointer-events:none; z-index:100;
+      animation:cffall linear forwards;
+    }
+    @keyframes cffall {
+      0%   { transform:translateY(-10px) rotate(0deg); opacity:1; }
+      100% { transform:translateY(105vh) rotate(800deg); opacity:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🦴 פאזל רקסי 🦴</h1>
+  <p id="subtitle">העלה תמונה כדי להתחיל לשחק</p>
+</div>
+
+<div class="stats">
+  <span>🕐 <span id="t">0:00</span></span>
+  <span>🔄 <span id="m">0</span></span>
+  <span>✅ <span id="pct">0%</span></span>
+</div>
+
+<div class="difficulty">
+  <button class="diff-btn" data-grid="4">4×4</button>
+  <button class="diff-btn active" data-grid="6">6×6</button>
+  <button class="diff-btn" data-grid="8">8×8</button>
+</div>
+
+<div id="upload-screen">
+  <div class="upload-zone" onclick="document.getElementById('file').click()">
+    <div class="icon">📸</div>
+    <p>לחץ לבחירת תמונה<br><span style="font-size:11px;opacity:.6">JPG · PNG · GIF</span></p>
+  </div>
+  <input type="file" id="file" accept="image/*" style="display:none" onchange="loadPhoto(this)">
+</div>
+
+<div id="game-area">
+  <div class="side">
+    <div class="preview-wrap">
+      <div class="preview-label">תמונה מלאה</div>
+      <canvas id="preview" width="72" height="72"></canvas>
+    </div>
+    <button class="btn btn-shuffle" onclick="shuffleBoard()">🔀 ערבב</button>
+    <button class="btn btn-hint"    onclick="hint()">💡 רמז</button>
+    <button class="btn btn-undo" id="undo-btn" onclick="undoMove()" disabled>↩ ביטול</button>
+    <label class="btn btn-photo" style="cursor:pointer">
+      📷 תמונה
+      <input type="file" id="file2" accept="image/*" style="display:none" onchange="loadPhoto(this)">
+    </label>
+  </div>
+  <div class="board-col">
+    <div id="grid"></div>
+    <div class="prog-wrap"><div id="prog"></div></div>
+  </div>
+</div>
+
+<div id="win">
+  <div class="win-box">
+    <div class="emo">🎉</div>
+    <h2>כל הכבוד!</h2>
+    <canvas id="win-img" width="120" height="120"></canvas>
+    <p id="win-info"></p>
+    <button class="win-btn" onclick="shuffleBoard(); closeWin()">🔄 שחק שוב</button>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let GRID = 6;
+let src = null;
+let ord = [];
+let sel = null;
+let mv = 0, sec = 0, tick = null, going = false;
+let moveHistory = [];
+let dragSrc = null;
+
+// Difficulty selector
+document.querySelectorAll('.diff-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    GRID = parseInt(btn.dataset.grid);
+    if (src) buildBoard();
+  });
+});
+
+// Load and crop photo to a square canvas
+function loadPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const img = new Image();
+  img.onload = () => {
+    const sz = Math.min(img.width, img.height);
+    const offX = (img.width - sz) / 2;
+    const offY = (img.height - sz) / 2;
+    const c = document.createElement('canvas');
+    c.width = c.height = 600;
+    c.getContext('2d').drawImage(img, offX, offY, sz, sz, 0, 0, 600, 600);
+    src = c;
+    $('upload-screen').style.display = 'none';
+    $('game-area').style.display = 'flex';
+    $('subtitle').textContent = 'בחר חלק ← לחץ ← בחר יעד';
+    buildBoard();
+    drawPreview();
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
+  input.value = '';
+}
+
+function drawPreview() {
+  if (!src) return;
+  $('preview').getContext('2d').drawImage(src, 0, 0, 72, 72);
+}
+
+function pieceSize() { return Math.floor(400 / GRID); }
+
+function buildBoard() {
+  const spx = pieceSize();
+  const sz = spx * GRID;
+  const grid = $('grid');
+  grid.style.gridTemplateColumns = `repeat(${GRID}, ${spx}px)`;
+  grid.style.width = sz + 'px';
+  grid.style.height = sz + 'px';
+
+  ord = Array.from({ length: GRID * GRID }, (_, i) => i);
+  sel = null; mv = 0; sec = 0; going = false;
+  moveHistory = [];
+  clearInterval(tick);
+  $('undo-btn').disabled = true;
+  renderBoard();
+  updateStats();
+}
+
+function renderBoard() {
+  const spx = pieceSize();
+  const grid = $('grid');
+  const pieces = Array.from(grid.children);
+
+  // If piece count matches, redraw canvases in-place to avoid flicker on swap
+  if (pieces.length === ord.length) {
+    ord.forEach((tileIdx, slotIdx) => {
+      const piece = pieces[slotIdx];
+      piece.classList.remove('selected', 'correct', 'drag-over', 'dragging');
+      const canvas = piece.querySelector('canvas');
+      redrawCanvas(canvas, tileIdx, spx);
+      piece.dataset.slot = slotIdx;
+    });
+    updateProgress();
+    return;
+  }
+
+  // Full rebuild
+  grid.innerHTML = '';
+  ord.forEach((tileIdx, slotIdx) => {
+    const piece = document.createElement('div');
+    piece.className = 'piece';
+    piece.style.width = spx + 'px';
+    piece.style.height = spx + 'px';
+    piece.dataset.slot = slotIdx;
+    piece.setAttribute('draggable', 'true');
+
+    const canvas = document.createElement('canvas');
+    canvas.width = spx;
+    canvas.height = spx;
+    redrawCanvas(canvas, tileIdx, spx);
+    piece.appendChild(canvas);
+
+    piece.addEventListener('click', () => tapPiece(slotIdx));
+    attachDrag(piece, slotIdx);
+    grid.appendChild(piece);
+  });
+  updateProgress();
+}
+
+function redrawCanvas(canvas, tileIdx, spx) {
+  const col = tileIdx % GRID;
+  const row = Math.floor(tileIdx / GRID);
+  const sw = src.width / GRID;
+  const sh = src.height / GRID;
+  canvas.width = spx;
+  canvas.height = spx;
+  canvas.getContext('2d').drawImage(src, col * sw, row * sh, sw, sh, 0, 0, spx, spx);
+}
+
+function attachDrag(piece, slotIdx) {
+  piece.addEventListener('dragstart', e => {
+    dragSrc = parseInt(piece.dataset.slot);
+    requestAnimationFrame(() => piece.classList.add('dragging'));
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  piece.addEventListener('dragend', () => {
+    piece.classList.remove('dragging');
+    clearDragOver();
+  });
+  piece.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const slot = parseInt(piece.dataset.slot);
+    if (slot !== dragSrc) piece.classList.add('drag-over');
+  });
+  piece.addEventListener('dragleave', () => piece.classList.remove('drag-over'));
+  piece.addEventListener('drop', e => {
+    e.preventDefault();
+    const slot = parseInt(piece.dataset.slot);
+    if (dragSrc === null || dragSrc === slot) return;
+    doSwap(dragSrc, slot);
+    dragSrc = null;
+  });
+}
+
+function clearDragOver() {
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+
+function tapPiece(slotIdx) {
+  if (!going) startTimer();
+  const pieces = $('grid').children;
+
+  if (sel === null) {
+    sel = slotIdx;
+    pieces[slotIdx].classList.add('selected');
+  } else if (sel === slotIdx) {
+    pieces[sel].classList.remove('selected');
+    sel = null;
+  } else {
+    doSwap(sel, slotIdx);
+    sel = null;
+  }
+}
+
+function doSwap(a, b) {
+  if (!going) startTimer();
+  moveHistory.push([...ord]);
+  $('undo-btn').disabled = false;
+  [ord[a], ord[b]] = [ord[b], ord[a]];
+  mv++;
+  renderBoard();
+  updateStats();
+  if (isSolved()) showWin();
+}
+
+function undoMove() {
+  if (!moveHistory.length) return;
+  ord = moveHistory.pop();
+  if (!moveHistory.length) $('undo-btn').disabled = true;
+  sel = null;
+  mv++;
+  renderBoard();
+  updateStats();
+}
+
+function shuffleBoard() {
+  if (!src) return;
+  moveHistory = [];
+  $('undo-btn').disabled = true;
+  sel = null; mv = 0; sec = 0; going = false;
+  clearInterval(tick);
+
+  do {
+    for (let i = ord.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [ord[i], ord[j]] = [ord[j], ord[i]];
+    }
+  } while (isSolved());
+
+  renderBoard();
+  updateStats();
+}
+
+function hint() {
+  const pieces = $('grid').children;
+  Array.from(pieces).forEach((p, i) => {
+    if (ord[i] === i) {
+      p.classList.add('correct');
+      setTimeout(() => p.classList.remove('correct'), 1600);
+    }
+  });
+}
+
+function isSolved() {
+  return ord.every((v, i) => v === i);
+}
+
+function updateProgress() {
+  const correct = ord.filter((v, i) => v === i).length;
+  const pct = Math.round((correct / (GRID * GRID)) * 100);
+  $('prog').style.width = pct + '%';
+  $('pct').textContent = pct + '%';
+}
+
+function updateStats() {
+  $('m').textContent = mv;
+  const mm = Math.floor(sec / 60);
+  const ss = (sec % 60).toString().padStart(2, '0');
+  $('t').textContent = mm + ':' + ss;
+  updateProgress();
+}
+
+function startTimer() {
+  going = true;
+  clearInterval(tick);
+  tick = setInterval(() => { sec++; updateStats(); }, 1000);
+}
+
+function showWin() {
+  clearInterval(tick);
+  going = false;
+  const mm = Math.floor(sec / 60);
+  const ss = (sec % 60).toString().padStart(2, '0');
+  $('win-info').textContent = `זמן: ${mm}:${ss}  •  מהלכים: ${mv}`;
+  $('win-img').getContext('2d').drawImage(src, 0, 0, 120, 120);
+  $('win').classList.add('show');
+  launchConfetti();
+}
+
+function closeWin() {
+  $('win').classList.remove('show');
+}
+
+function launchConfetti() {
+  const colors = ['#ffd700','#ff6b35','#4f8ef7','#3cb371','#ff69b4','#00cfff','#c678dd'];
+  for (let i = 0; i < 70; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      const size = 6 + Math.random() * 8;
+      el.style.cssText = [
+        `left:${Math.random() * 100}vw`,
+        `top:-12px`,
+        `width:${size}px`,
+        `height:${size}px`,
+        `background:${colors[Math.floor(Math.random() * colors.length)]}`,
+        `animation-duration:${1.8 + Math.random() * 2.2}s`,
+      ].join(';');
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4500);
+    }, i * 35);
+  }
+}
+</script>
+</body>
+</html>
