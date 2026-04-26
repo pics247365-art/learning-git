@@ -62,6 +62,7 @@
       padding:24px 20px; text-align:center;
     }
     .upload-zone {
+      display:block;
       width:200px; height:200px;
       border:2px dashed rgba(255,215,0,.5); border-radius:20px;
       display:flex; flex-direction:column;
@@ -69,10 +70,17 @@
       cursor:pointer;
       background:rgba(255,255,255,.05);
       transition:all .2s; color:#fff;
+      text-decoration:none;
     }
     .upload-zone:hover, .upload-zone:active { background:rgba(255,255,255,.12); border-color:#ffd700; }
     .upload-zone .icon { font-size:48px; }
     .upload-zone p { font-size:14px; color:rgba(255,255,255,.8); line-height:1.5; }
+    .demo-btn {
+      padding:10px 28px; border:none; border-radius:16px;
+      background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.25);
+      color:#fff; font-size:14px; font-weight:700; cursor:pointer;
+    }
+    .demo-btn:active { opacity:.75; }
 
     /* ── Game layout: grid centered, full width ── */
     #game-area {
@@ -200,11 +208,12 @@
 
 <!-- Upload screen -->
 <div id="upload-screen">
-  <div class="upload-zone" onclick="document.getElementById('file').click()">
+  <label class="upload-zone" for="file">
     <div class="icon">📸</div>
     <p>לחץ לבחירת תמונה<br><span style="font-size:11px;opacity:.6">JPG · PNG · GIF</span></p>
-  </div>
+  </label>
   <input type="file" id="file" accept="image/*" style="display:none" onchange="loadPhoto(this)">
+  <button class="demo-btn" onclick="loadDemo()">▶ דמו — בלי תמונה</button>
 </div>
 
 <!-- Game -->
@@ -260,6 +269,41 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
     if (src) buildBoard();
   });
 });
+
+// Demo mode — generate a colorful gradient image
+function loadDemo() {
+  const c = document.createElement('canvas');
+  c.width = c.height = 600;
+  const ctx = c.getContext('2d');
+  // Colorful gradient background
+  const g = ctx.createLinearGradient(0, 0, 600, 600);
+  g.addColorStop(0,   '#ff6b35');
+  g.addColorStop(0.3, '#ffd700');
+  g.addColorStop(0.6, '#4f8ef7');
+  g.addColorStop(1,   '#c678dd');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 600, 600);
+  // Grid lines so pieces are visually distinct
+  ctx.strokeStyle = 'rgba(255,255,255,.35)';
+  ctx.lineWidth = 2;
+  for (let i = 1; i < 8; i++) {
+    ctx.beginPath(); ctx.moveTo(i*75, 0); ctx.lineTo(i*75, 600); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, i*75); ctx.lineTo(600, i*75); ctx.stroke();
+  }
+  // Numbers so you can see piece order
+  ctx.fillStyle = 'rgba(255,255,255,.7)';
+  ctx.font = 'bold 40px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  for (let r = 0; r < GRID; r++)
+    for (let cc = 0; cc < GRID; cc++)
+      ctx.fillText(r*GRID+cc+1, cc*75+37, r*75+37);
+  src = c;
+  $('upload-screen').style.display = 'none';
+  $('game-area').style.display = 'flex';
+  $('toolbar').style.display = 'flex';
+  buildBoard();
+  drawPreview();
+}
 
 // Compute grid pixel size from viewport
 function gridPx() {
