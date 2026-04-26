@@ -14,109 +14,84 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 12px 8px 32px;
+      padding: 10px 8px 0;
       overflow-x: hidden;
     }
 
-    .header { text-align:center; margin-bottom:10px; color:#fff; }
+    /* ── Header ── */
+    .header { text-align:center; margin-bottom:8px; color:#fff; }
     .header h1 {
-      font-size:28px; font-weight:900;
+      font-size:24px; font-weight:900;
       background: linear-gradient(90deg,#fff 0%,#ffd700 50%,#fff 100%);
       -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
     }
-    .header p { font-size:13px; color:rgba(255,255,255,.7); margin-top:3px; }
 
+    /* ── Stats bar ── */
     .stats {
-      display:flex; gap:16px;
+      display:flex; gap:14px; align-items:center;
       background:rgba(255,255,255,.1); backdrop-filter:blur(10px);
       border:1px solid rgba(255,255,255,.15); border-radius:20px;
-      padding:8px 22px; margin-bottom:10px;
+      padding:7px 18px; margin-bottom:8px;
       color:#fff; font-weight:700; font-size:13px;
     }
-    .stats span { display:flex; align-items:center; gap:5px; }
-
-    .difficulty {
-      display:flex; gap:6px; margin-bottom:10px;
+    .stats span { display:flex; align-items:center; gap:4px; }
+    #preview-mini {
+      width:32px; height:32px; border-radius:6px;
+      border:1px solid rgba(255,215,0,.4); display:block;
+      margin-right:auto; /* pushes to left in RTL = right side */
     }
+
+    /* ── Difficulty pills ── */
+    .difficulty { display:flex; gap:6px; margin-bottom:8px; }
     .diff-btn {
       padding:5px 14px;
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:14px;
+      border:1px solid rgba(255,255,255,.25); border-radius:14px;
       background:rgba(255,255,255,.1);
       color:#fff; font-size:12px; font-weight:700;
       cursor:pointer; transition:all .15s;
     }
     .diff-btn.active {
       background:linear-gradient(135deg,#ffd700,#ff9a56);
-      border-color:transparent;
-      color:#1a1a2e;
+      border-color:transparent; color:#1a1a2e;
     }
 
-    /* Upload screen */
+    /* ── Upload screen ── */
     #upload-screen {
       display:flex; flex-direction:column;
-      align-items:center; gap:20px;
-      padding:30px 20px; text-align:center;
+      align-items:center; gap:16px;
+      padding:24px 20px; text-align:center;
     }
     .upload-zone {
-      width:220px; height:220px;
-      border:2px dashed rgba(255,215,0,.5);
-      border-radius:20px;
+      width:200px; height:200px;
+      border:2px dashed rgba(255,215,0,.5); border-radius:20px;
       display:flex; flex-direction:column;
-      align-items:center; justify-content:center; gap:12px;
+      align-items:center; justify-content:center; gap:10px;
       cursor:pointer;
       background:rgba(255,255,255,.05);
       transition:all .2s; color:#fff;
     }
-    .upload-zone:hover { background:rgba(255,255,255,.12); border-color:#ffd700; }
-    .upload-zone .icon { font-size:52px; }
+    .upload-zone:hover, .upload-zone:active { background:rgba(255,255,255,.12); border-color:#ffd700; }
+    .upload-zone .icon { font-size:48px; }
     .upload-zone p { font-size:14px; color:rgba(255,255,255,.8); line-height:1.5; }
 
-    /* Game layout */
+    /* ── Game layout: grid centered, full width ── */
     #game-area {
-      display:none; gap:10px;
-      align-items:flex-start; justify-content:center;
-      width:100%; max-width:520px;
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      width:100%;
     }
-
-    .side {
-      display:flex; flex-direction:column; gap:8px; align-items:stretch;
-      min-width:84px;
-    }
-
-    .preview-wrap {
-      background:rgba(255,255,255,.1); border-radius:10px;
-      padding:6px; border:1px solid rgba(255,255,255,.15);
-    }
-    .preview-label { font-size:9px; color:rgba(255,255,255,.65); text-align:center; margin-bottom:4px; }
-    #preview { display:block; width:72px; height:72px; border-radius:6px; }
-
-    .btn {
-      padding:9px 8px; border:none; border-radius:12px;
-      font-size:12px; font-weight:700; cursor:pointer;
-      transition:transform .1s, filter .1s;
-      display:flex; align-items:center; gap:5px; justify-content:center;
-      white-space:nowrap;
-    }
-    .btn:active { transform:scale(.95); }
-    .btn:disabled { opacity:.4; cursor:default; transform:none; }
-    .btn-shuffle { background:linear-gradient(135deg,#ff6b35,#ff9a56); color:#fff; }
-    .btn-hint    { background:rgba(255,255,255,.15); color:#fff; border:1px solid rgba(255,255,255,.25); }
-    .btn-undo    { background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
-    .btn-photo   { background:linear-gradient(135deg,#4f8ef7,#7b5ea7); color:#fff; }
-
-    .board-col { display:flex; flex-direction:column; align-items:center; gap:0; }
 
     #grid {
       display:grid; background:#111;
       border:2px solid rgba(255,215,0,.4); border-radius:8px;
       overflow:hidden; touch-action:manipulation; user-select:none;
-      box-shadow:0 0 30px rgba(255,215,0,.15);
+      box-shadow:0 0 28px rgba(255,215,0,.15);
     }
 
     .piece {
       cursor:pointer; overflow:hidden;
-      transition:transform .12s, outline .1s;
+      transition:transform .12s, outline .08s;
       position:relative;
     }
     .piece canvas { display:block; width:100%; height:100%; pointer-events:none; }
@@ -124,29 +99,53 @@
       outline:3px solid #FFD700; outline-offset:-2px;
       z-index:5; transform:scale(1.06); filter:brightness(1.18);
     }
-    .piece.correct {
-      outline:2px solid rgba(80,255,130,.7); outline-offset:-2px;
-    }
-    .piece.drag-over {
-      outline:3px solid #00cfff; outline-offset:-2px;
-      transform:scale(1.06);
-    }
+    .piece.correct { outline:2px solid rgba(80,255,130,.75); outline-offset:-2px; }
+    .piece.drag-over { outline:3px solid #00cfff; outline-offset:-2px; transform:scale(1.06); }
     .piece.dragging { opacity:.35; }
     .piece[draggable="true"] { cursor:grab; }
-    .piece[draggable="true"]:active { cursor:grabbing; }
 
+    /* ── Progress bar ── */
     .prog-wrap {
-      width:100%; height:6px;
+      width:100%; height:5px;
       background:rgba(255,255,255,.15); border-radius:3px;
-      margin-top:8px; overflow:hidden;
+      margin-top:6px; overflow:hidden;
     }
     #prog {
       height:100%; background:linear-gradient(90deg,#ffd700,#ff9a56);
-      border-radius:3px; transition:width .35s;
-      width:0%;
+      border-radius:3px; transition:width .35s; width:0%;
     }
 
-    /* Win overlay */
+    /* ── Bottom toolbar ── */
+    .toolbar {
+      display:flex; align-items:center; justify-content:space-around;
+      width:100%; max-width:480px;
+      background:rgba(15,20,45,.9); backdrop-filter:blur(14px);
+      border-top:1px solid rgba(255,255,255,.12);
+      padding:10px 8px calc(10px + env(safe-area-inset-bottom));
+      margin-top:8px;
+      position:sticky; bottom:0;
+      gap:6px;
+    }
+    .tb-btn {
+      display:flex; flex-direction:column; align-items:center; gap:3px;
+      border:none; background:none; color:#fff;
+      font-size:10px; font-weight:700; cursor:pointer;
+      min-width:52px; padding:6px 4px; border-radius:12px;
+      transition:background .15s, transform .1s;
+      -webkit-tap-highlight-color:transparent;
+    }
+    .tb-btn:active { transform:scale(.9); background:rgba(255,255,255,.1); }
+    .tb-btn:disabled { opacity:.35; }
+    .tb-btn .ico { font-size:22px; line-height:1; }
+    .tb-btn.accent .ico-wrap {
+      background:linear-gradient(135deg,#ff6b35,#ff9a56);
+      border-radius:50%; width:44px; height:44px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .tb-btn.accent .ico { font-size:20px; }
+    label.tb-btn { cursor:pointer; }
+
+    /* ── Win overlay ── */
     #win {
       position:fixed; inset:0; background:rgba(0,0,0,.88);
       display:flex; align-items:center; justify-content:center;
@@ -158,17 +157,17 @@
       border:1px solid rgba(255,215,0,.35); border-radius:24px;
       padding:32px 28px; text-align:center; max-width:300px; width:90%;
     }
-    .win-box .emo { font-size:60px; }
-    .win-box h2 { font-size:26px; font-weight:900; color:#ffd700; margin:10px 0 6px; }
+    .win-box .emo { font-size:58px; }
+    .win-box h2 { font-size:26px; font-weight:900; color:#ffd700; margin:8px 0 4px; }
     #win-img { width:120px; height:120px; border-radius:12px; margin:10px auto; display:block; border:2px solid rgba(255,215,0,.4); }
-    #win-info { color:rgba(255,255,255,.75); font-size:13px; margin-bottom:20px; line-height:1.7; }
+    #win-info { color:rgba(255,255,255,.75); font-size:13px; margin-bottom:20px; line-height:1.8; }
     .win-btn {
       background:linear-gradient(135deg,#ff6b35,#ff9a56);
       color:#fff; border:none; border-radius:22px;
       padding:12px 30px; font-size:15px; font-weight:700; cursor:pointer;
     }
 
-    /* Confetti */
+    /* ── Confetti ── */
     .confetti-piece {
       position:fixed; border-radius:2px;
       pointer-events:none; z-index:100;
@@ -184,10 +183,10 @@
 
 <div class="header">
   <h1>🦴 פאזל רקסי 🦴</h1>
-  <p id="subtitle">העלה תמונה כדי להתחיל לשחק</p>
 </div>
 
 <div class="stats">
+  <canvas id="preview-mini" width="32" height="32"></canvas>
   <span>🕐 <span id="t">0:00</span></span>
   <span>🔄 <span id="m">0</span></span>
   <span>✅ <span id="pct">0%</span></span>
@@ -199,6 +198,7 @@
   <button class="diff-btn" data-grid="8">8×8</button>
 </div>
 
+<!-- Upload screen -->
 <div id="upload-screen">
   <div class="upload-zone" onclick="document.getElementById('file').click()">
     <div class="icon">📸</div>
@@ -207,26 +207,31 @@
   <input type="file" id="file" accept="image/*" style="display:none" onchange="loadPhoto(this)">
 </div>
 
+<!-- Game -->
 <div id="game-area">
-  <div class="side">
-    <div class="preview-wrap">
-      <div class="preview-label">תמונה מלאה</div>
-      <canvas id="preview" width="72" height="72"></canvas>
-    </div>
-    <button class="btn btn-shuffle" onclick="shuffleBoard()">🔀 ערבב</button>
-    <button class="btn btn-hint"    onclick="hint()">💡 רמז</button>
-    <button class="btn btn-undo" id="undo-btn" onclick="undoMove()" disabled>↩ ביטול</button>
-    <label class="btn btn-photo" style="cursor:pointer">
-      📷 תמונה
-      <input type="file" id="file2" accept="image/*" style="display:none" onchange="loadPhoto(this)">
-    </label>
-  </div>
-  <div class="board-col">
-    <div id="grid"></div>
-    <div class="prog-wrap"><div id="prog"></div></div>
-  </div>
+  <div id="grid"></div>
+  <div class="prog-wrap"><div id="prog"></div></div>
 </div>
 
+<!-- Bottom toolbar (always visible once game starts) -->
+<div class="toolbar" id="toolbar" style="display:none">
+  <button class="tb-btn" onclick="hint()">
+    <span class="ico">💡</span>רמז
+  </button>
+  <button class="tb-btn" id="undo-btn" onclick="undoMove()" disabled>
+    <span class="ico">↩️</span>ביטול
+  </button>
+  <button class="tb-btn accent" onclick="shuffleBoard()">
+    <span class="ico-wrap"><span class="ico">🔀</span></span>
+    ערבב
+  </button>
+  <label class="tb-btn">
+    <span class="ico">📷</span>תמונה
+    <input type="file" id="file2" accept="image/*" style="display:none" onchange="loadPhoto(this)">
+  </label>
+</div>
+
+<!-- Win overlay -->
 <div id="win">
   <div class="win-box">
     <div class="emo">🎉</div>
@@ -241,14 +246,12 @@
 const $ = id => document.getElementById(id);
 
 let GRID = 6;
-let src = null;
-let ord = [];
-let sel = null;
+let src = null, ord = [], sel = null;
 let mv = 0, sec = 0, tick = null, going = false;
 let moveHistory = [];
 let dragSrc = null;
 
-// Difficulty selector
+// Difficulty
 document.querySelectorAll('.diff-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
@@ -258,22 +261,28 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
   });
 });
 
-// Load and crop photo to a square canvas
+// Compute grid pixel size from viewport
+function gridPx() {
+  return Math.min(window.innerWidth - 16, 480);
+}
+function piecePx() { return Math.floor(gridPx() / GRID); }
+
+// Load & crop photo
 function loadPhoto(input) {
   const file = input.files[0];
   if (!file) return;
   const img = new Image();
   img.onload = () => {
     const sz = Math.min(img.width, img.height);
-    const offX = (img.width - sz) / 2;
-    const offY = (img.height - sz) / 2;
     const c = document.createElement('canvas');
     c.width = c.height = 600;
-    c.getContext('2d').drawImage(img, offX, offY, sz, sz, 0, 0, 600, 600);
+    c.getContext('2d').drawImage(img,
+      (img.width - sz) / 2, (img.height - sz) / 2, sz, sz,
+      0, 0, 600, 600);
     src = c;
     $('upload-screen').style.display = 'none';
     $('game-area').style.display = 'flex';
-    $('subtitle').textContent = 'בחר חלק ← לחץ ← בחר יעד';
+    $('toolbar').style.display = 'flex';
     buildBoard();
     drawPreview();
     URL.revokeObjectURL(img.src);
@@ -284,13 +293,11 @@ function loadPhoto(input) {
 
 function drawPreview() {
   if (!src) return;
-  $('preview').getContext('2d').drawImage(src, 0, 0, 72, 72);
+  $('preview-mini').getContext('2d').drawImage(src, 0, 0, 32, 32);
 }
 
-function pieceSize() { return Math.floor(400 / GRID); }
-
 function buildBoard() {
-  const spx = pieceSize();
+  const spx = piecePx();
   const sz = spx * GRID;
   const grid = $('grid');
   grid.style.gridTemplateColumns = `repeat(${GRID}, ${spx}px)`;
@@ -306,79 +313,66 @@ function buildBoard() {
   updateStats();
 }
 
+// Redraw only canvas content (avoids full DOM rebuild on every swap)
 function renderBoard() {
-  const spx = pieceSize();
+  const spx = piecePx();
   const grid = $('grid');
-  const pieces = Array.from(grid.children);
+  const pieces = grid.children;
 
-  // If piece count matches, redraw canvases in-place to avoid flicker on swap
   if (pieces.length === ord.length) {
     ord.forEach((tileIdx, slotIdx) => {
       const piece = pieces[slotIdx];
       piece.classList.remove('selected', 'correct', 'drag-over', 'dragging');
-      const canvas = piece.querySelector('canvas');
-      redrawCanvas(canvas, tileIdx, spx);
       piece.dataset.slot = slotIdx;
+      redrawCanvas(piece.querySelector('canvas'), tileIdx, spx);
     });
     updateProgress();
     return;
   }
 
-  // Full rebuild
   grid.innerHTML = '';
   ord.forEach((tileIdx, slotIdx) => {
     const piece = document.createElement('div');
     piece.className = 'piece';
-    piece.style.width = spx + 'px';
-    piece.style.height = spx + 'px';
+    piece.style.cssText = `width:${spx}px;height:${spx}px`;
     piece.dataset.slot = slotIdx;
     piece.setAttribute('draggable', 'true');
 
     const canvas = document.createElement('canvas');
-    canvas.width = spx;
-    canvas.height = spx;
     redrawCanvas(canvas, tileIdx, spx);
     piece.appendChild(canvas);
 
     piece.addEventListener('click', () => tapPiece(slotIdx));
-    attachDrag(piece, slotIdx);
+    attachDrag(piece);
     grid.appendChild(piece);
   });
   updateProgress();
 }
 
 function redrawCanvas(canvas, tileIdx, spx) {
-  const col = tileIdx % GRID;
-  const row = Math.floor(tileIdx / GRID);
-  const sw = src.width / GRID;
-  const sh = src.height / GRID;
-  canvas.width = spx;
-  canvas.height = spx;
+  const col = tileIdx % GRID, row = Math.floor(tileIdx / GRID);
+  const sw = src.width / GRID, sh = src.height / GRID;
+  canvas.width = spx; canvas.height = spx;
   canvas.getContext('2d').drawImage(src, col * sw, row * sh, sw, sh, 0, 0, spx, spx);
 }
 
-function attachDrag(piece, slotIdx) {
+// Drag & drop (desktop)
+function attachDrag(piece) {
   piece.addEventListener('dragstart', e => {
     dragSrc = parseInt(piece.dataset.slot);
     requestAnimationFrame(() => piece.classList.add('dragging'));
     e.dataTransfer.effectAllowed = 'move';
   });
-  piece.addEventListener('dragend', () => {
-    piece.classList.remove('dragging');
-    clearDragOver();
-  });
+  piece.addEventListener('dragend', () => { piece.classList.remove('dragging'); clearDragOver(); });
   piece.addEventListener('dragover', e => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    const slot = parseInt(piece.dataset.slot);
-    if (slot !== dragSrc) piece.classList.add('drag-over');
+    e.preventDefault(); e.dataTransfer.dropEffect = 'move';
+    if (parseInt(piece.dataset.slot) !== dragSrc) piece.classList.add('drag-over');
   });
   piece.addEventListener('dragleave', () => piece.classList.remove('drag-over'));
   piece.addEventListener('drop', e => {
     e.preventDefault();
     const slot = parseInt(piece.dataset.slot);
-    if (dragSrc === null || dragSrc === slot) return;
-    doSwap(dragSrc, slot);
+    if (dragSrc !== null && dragSrc !== slot) doSwap(dragSrc, slot);
     dragSrc = null;
   });
 }
@@ -387,10 +381,10 @@ function clearDragOver() {
   document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
 }
 
+// Tap-to-swap (touch & click)
 function tapPiece(slotIdx) {
   if (!going) startTimer();
   const pieces = $('grid').children;
-
   if (sel === null) {
     sel = slotIdx;
     pieces[slotIdx].classList.add('selected');
@@ -418,33 +412,26 @@ function undoMove() {
   if (!moveHistory.length) return;
   ord = moveHistory.pop();
   if (!moveHistory.length) $('undo-btn').disabled = true;
-  sel = null;
-  mv++;
-  renderBoard();
-  updateStats();
+  sel = null; mv++;
+  renderBoard(); updateStats();
 }
 
 function shuffleBoard() {
   if (!src) return;
-  moveHistory = [];
-  $('undo-btn').disabled = true;
-  sel = null; mv = 0; sec = 0; going = false;
+  moveHistory = []; sel = null; mv = 0; sec = 0; going = false;
   clearInterval(tick);
-
+  $('undo-btn').disabled = true;
   do {
     for (let i = ord.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [ord[i], ord[j]] = [ord[j], ord[i]];
     }
   } while (isSolved());
-
-  renderBoard();
-  updateStats();
+  renderBoard(); updateStats();
 }
 
 function hint() {
-  const pieces = $('grid').children;
-  Array.from(pieces).forEach((p, i) => {
+  Array.from($('grid').children).forEach((p, i) => {
     if (ord[i] === i) {
       p.classList.add('correct');
       setTimeout(() => p.classList.remove('correct'), 1600);
@@ -452,22 +439,17 @@ function hint() {
   });
 }
 
-function isSolved() {
-  return ord.every((v, i) => v === i);
-}
+function isSolved() { return ord.every((v, i) => v === i); }
 
 function updateProgress() {
-  const correct = ord.filter((v, i) => v === i).length;
-  const pct = Math.round((correct / (GRID * GRID)) * 100);
+  const pct = Math.round(ord.filter((v, i) => v === i).length / (GRID * GRID) * 100);
   $('prog').style.width = pct + '%';
   $('pct').textContent = pct + '%';
 }
 
 function updateStats() {
   $('m').textContent = mv;
-  const mm = Math.floor(sec / 60);
-  const ss = (sec % 60).toString().padStart(2, '0');
-  $('t').textContent = mm + ':' + ss;
+  $('t').textContent = Math.floor(sec / 60) + ':' + (sec % 60).toString().padStart(2, '0');
   updateProgress();
 }
 
@@ -478,19 +460,15 @@ function startTimer() {
 }
 
 function showWin() {
-  clearInterval(tick);
-  going = false;
-  const mm = Math.floor(sec / 60);
-  const ss = (sec % 60).toString().padStart(2, '0');
-  $('win-info').textContent = `זמן: ${mm}:${ss}  •  מהלכים: ${mv}`;
+  clearInterval(tick); going = false;
+  $('win-info').textContent =
+    `זמן: ${Math.floor(sec/60)}:${(sec%60).toString().padStart(2,'0')}  •  מהלכים: ${mv}`;
   $('win-img').getContext('2d').drawImage(src, 0, 0, 120, 120);
   $('win').classList.add('show');
   launchConfetti();
 }
 
-function closeWin() {
-  $('win').classList.remove('show');
-}
+function closeWin() { $('win').classList.remove('show'); }
 
 function launchConfetti() {
   const colors = ['#ffd700','#ff6b35','#4f8ef7','#3cb371','#ff69b4','#00cfff','#c678dd'];
@@ -498,20 +476,18 @@ function launchConfetti() {
     setTimeout(() => {
       const el = document.createElement('div');
       el.className = 'confetti-piece';
-      const size = 6 + Math.random() * 8;
-      el.style.cssText = [
-        `left:${Math.random() * 100}vw`,
-        `top:-12px`,
-        `width:${size}px`,
-        `height:${size}px`,
-        `background:${colors[Math.floor(Math.random() * colors.length)]}`,
-        `animation-duration:${1.8 + Math.random() * 2.2}s`,
-      ].join(';');
+      const s = 6 + Math.random() * 8;
+      el.style.cssText = `left:${Math.random()*100}vw;top:-12px;width:${s}px;height:${s}px;` +
+        `background:${colors[Math.floor(Math.random()*colors.length)]};` +
+        `animation-duration:${1.8+Math.random()*2.2}s`;
       document.body.appendChild(el);
       setTimeout(() => el.remove(), 4500);
     }, i * 35);
   }
 }
+
+// Refit grid if screen rotates
+window.addEventListener('resize', () => { if (src) buildBoard(); });
 </script>
 </body>
 </html>
