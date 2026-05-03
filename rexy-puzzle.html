@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>🐾 פאזל רקסי</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Assistant:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #FFD700;
+      --glass: rgba(255,255,255,0.1);
+      --glass-b: rgba(255,255,255,0.18);
+    }
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: #fff;
+    }
+
+    /* ── Particles ── */
+    #particles-canvas {
+      position: fixed; top:0; left:0;
+      width:100%; height:100%;
+      pointer-events:none; z-index:0;
+    }
+
+    /* ── Screens ── */
+    .screen { display:none; position:relative; z-index:1; }
+    .screen.active { display:flex; flex-direction:column; min-height:100vh; }
+
+    /* ── HOME ── */
+    #home-screen {
+      align-items:center; justify-content:center;
+      padding:24px 16px; gap:22px; text-align:center;
+    }
+    .logo-title {
+      font-family:'Fredoka One', cursive;
+      font-size:clamp(38px,9vw,64px);
+      background:linear-gradient(90deg,#FFD700 0%,#FF8C00 50%,#FF4081 100%);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      filter:drop-shadow(0 0 22px rgba(255,215,0,0.45));
+    }
+    .logo-sub { color:rgba(255,255,255,.72); font-size:16px; margin-top:4px; }
+
+    .dog-preview {
+      width:min(240px,58vw); height:min(240px,58vw);
+      border-radius:50%;
+      border:3px solid var(--gold);
+      box-shadow:0 0 44px rgba(255,215,0,.35), 0 18px 40px rgba(0,0,0,.45);
+      overflow:hidden;
+      animation:float 3.2s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-13px)} }
+
+    .level-row {
+      display:flex; gap:13px; flex-wrap:wrap; justify-content:center;
+      width:100%; max-width:470px;
+    }
+    .lvl-card {
+      flex:1; min-width:110px; max-width:135px;
+      background:var(--glass); backdrop-filter:blur(10px);
+      border:2px solid rgba(255,255,255,.18);
+      border-radius:22px; padding:18px 10px;
+      cursor:pointer;
+      transition:transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .lvl-card:active { transform:scale(.94); }
+    .lvl-card.easy   { border-color:#66BB6A; }
+    .lvl-card.medium { border-color:var(--gold); }
+    .lvl-card.hard   { border-color:#FF7043; }
+    .lvl-card:hover  { transform:translateY(-5px); }
+    .lvl-card.easy:hover   { box-shadow:0 12px 28px rgba(102,187,106,.35); }
+    .lvl-card.medium:hover { box-shadow:0 12px 28px rgba(255,215,0,.35); }
+    .lvl-card.hard:hover   { box-shadow:0 12px 28px rgba(255,112,67,.35); }
+    .lvl-icon { font-size:34px; margin-bottom:7px; }
+    .lvl-name { font-family:'Fredoka One',cursive; font-size:17px; }
+    .easy   .lvl-name { color:#A5D6A7; }
+    .medium .lvl-name { color:var(--gold); }
+    .hard   .lvl-name { color:#FFAB91; }
+    .lvl-desc { font-size:12px; color:rgba(255,255,255,.65); margin-top:3px; }
+
+    /* ── GAME ── */
+    #game-screen { flex-direction:column; align-items:center; }
+
+    .g-header {
+      width:100%; padding:10px 16px;
+      background:rgba(0,0,0,.35); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--glass-b);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      flex-shrink:0;
+    }
+    .g-title { font-family:'Fredoka One',cursive; font-size:21px; color:var(--gold); }
+    .g-stats { display:flex; gap:10px; align-items:center; }
+    .pill {
+      background:var(--glass); border:1px solid var(--glass-b);
+      border-radius:999px; padding:5px 13px;
+      font-family:'Fredoka One',cursive; font-size:15px;
+      display:flex; align-items:center; gap:4px;
+    }
+    .back-btn {
+      background:rgba(255,255,255,.14); border:1px solid var(--glass-b);
+      border-radius:999px; padding:6px 14px;
+      color:#fff; font-size:14px; cursor:pointer;
+      transition:background .2s;
+    }
+    .back-btn:hover { background:rgba(255,255,255,.26); }
+
+    .prog-bar { width:100%; height:6px; background:rgba(255,255,255,.1); flex-shrink:0; }
+    .prog-fill {
+      height:100%;
+      background:linear-gradient(90deg,#66BB6A,#FFD700,#FF7043);
+      transition:width .5s ease; border-radius:0 3px 3px 0;
+    }
+
+    .puzzle-area {
+      flex:1; display:flex; flex-direction:column;
+      align-items:center; padding:14px 10px; gap:12px;
+      width:100%; overflow-y:auto;
+    }
+    .top-row {
+      display:flex; gap:12px; align-items:flex-start;
+      width:100%; max-width:520px; justify-content:center;
+    }
+    .ref-panel {
+      background:var(--glass); backdrop-filter:blur(8px);
+      border:2px solid var(--glass-b); border-radius:14px;
+      padding:8px; text-align:center; flex-shrink:0;
+    }
+    .ref-lbl { font-size:10px; color:rgba(255,255,255,.6); margin-bottom:4px; font-family:'Fredoka One',cursive; }
+
+    .grid-wrap {
+      background:rgba(0,0,0,.32);
+      border:2px solid rgba(255,215,0,.3);
+      border-radius:14px; padding:6px;
+      box-shadow:0 0 35px rgba(255,215,0,.12);
+    }
+    #puzzle-grid {
+      display:grid; gap:3px;
+      user-select:none; touch-action:manipulation;
+    }
+    .piece-slot {
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:5px; overflow:hidden;
+      cursor:pointer;
+      transition:transform .14s, box-shadow .14s, outline .1s;
+    }
+    .piece-slot canvas { display:block; }
+    .piece-slot.selected {
+      outline:3px solid var(--gold); outline-offset:-1px;
+      transform:scale(1.09); z-index:5;
+      box-shadow:0 0 22px rgba(255,215,0,.55);
+    }
+    .piece-slot.correct {
+      outline:2px solid rgba(102,187,106,.8); outline-offset:-1px;
+    }
+    .piece-slot.snap {
+      animation:snapIn .38s ease forwards;
+    }
+    @keyframes snapIn {
+      0%   { transform:scale(1.22); filter:brightness(1.6); }
+      60%  { transform:scale(.94); filter:brightness(1); }
+      100% { transform:scale(1); }
+    }
+
+    .hint-lbl {
+      font-family:'Fredoka One',cursive; font-size:14px;
+      color:rgba(255,255,255,.65); text-align:center;
+    }
+
+    /* ── WIN ── */
+    #win-screen {
+      align-items:center; justify-content:center;
+      padding:24px 16px; gap:16px; text-align:center;
+    }
+    .win-dog { font-size:78px; animation:bounce .55s ease infinite alternate; }
+    @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-20px)} }
+    .win-title {
+      font-family:'Fredoka One',cursive;
+      font-size:clamp(44px,11vw,76px);
+      background:linear-gradient(90deg,#FFD700,#FF4081,#7C4DFF);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+      animation:hueShift 2s linear infinite;
+    }
+    @keyframes hueShift { 0%{filter:hue-rotate(0deg)} 100%{filter:hue-rotate(360deg)} }
+
+    .stars-row { display:flex; gap:6px; justify-content:center; font-size:46px; }
+    .star { opacity:.18; transition:opacity .3s, filter .3s; }
+    .star.lit { opacity:1; filter:drop-shadow(0 0 12px #FFD700); }
+
+    .win-panel {
+      background:var(--glass); border:2px solid var(--glass-b);
+      border-radius:22px; padding:20px 32px;
+      display:flex; gap:26px;
+    }
+    .ws-val { font-family:'Fredoka One',cursive; font-size:32px; color:var(--gold); }
+    .ws-lbl { font-size:13px; color:rgba(255,255,255,.7); }
+
+    .win-btns { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    .btn-gold {
+      font-family:'Fredoka One',cursive; border:none;
+      padding:14px 30px; border-radius:999px; font-size:18px; cursor:pointer;
+      background:linear-gradient(135deg,#FFD700,#FF8C00);
+      color:#1a1a2e; box-shadow:0 6px 22px rgba(255,215,0,.4);
+      transition:transform .15s, box-shadow .15s;
+    }
+    .btn-gold:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(255,215,0,.5); }
+    .btn-glass {
+      font-family:'Fredoka One',cursive; font-size:18px; cursor:pointer;
+      padding:14px 28px; border-radius:999px;
+      background:var(--glass); color:#fff;
+      border:2px solid var(--glass-b);
+      transition:background .2s;
+    }
+    .btn-glass:hover { background:rgba(255,255,255,.2); }
+
+    /* Confetti */
+    #confetti-canvas {
+      position:fixed; top:0; left:0; width:100%; height:100%;
+      pointer-events:none; z-index:200;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ════ HOME ════ -->
+<div id="home-screen" class="screen active">
+  <div>
+    <div class="logo-title">🐾 פאזל רקסי</div>
+    <div class="logo-sub">חבר את החתיכות וגלה את הכלב!</div>
+  </div>
+
+  <div class="dog-preview">
+    <canvas id="preview-canvas" style="width:100%;height:100%;display:block;"></canvas>
+  </div>
+
+  <div>
+    <div style="font-family:'Fredoka One',cursive;font-size:18px;color:var(--gold);margin-bottom:14px;">
+      בחר רמת קושי:
+    </div>
+    <div class="level-row">
+      <div class="lvl-card easy"   onclick="startGame(3)">
+        <div class="lvl-icon">🌟</div>
+        <div class="lvl-name">קל</div>
+        <div class="lvl-desc">3×3 · 9 חתיכות</div>
+      </div>
+      <div class="lvl-card medium" onclick="startGame(4)">
+        <div class="lvl-icon">⭐⭐</div>
+        <div class="lvl-name">בינוני</div>
+        <div class="lvl-desc">4×4 · 16 חתיכות</div>
+      </div>
+      <div class="lvl-card hard"   onclick="startGame(5)">
+        <div class="lvl-icon">🔥</div>
+        <div class="lvl-name">קשה</div>
+        <div class="lvl-desc">5×5 · 25 חתיכות</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GAME ════ -->
+<div id="game-screen" class="screen">
+  <div class="g-header">
+    <button class="back-btn" onclick="goHome()">← בית</button>
+    <div class="g-title">🐾 פאזל רקסי</div>
+    <div class="g-stats">
+      <div class="pill">⏱ <span id="timer-val">00:00</span></div>
+      <div class="pill">✅ <span id="prog-val">0</span></div>
+    </div>
+  </div>
+  <div class="prog-bar">
+    <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+  </div>
+  <div class="puzzle-area">
+    <div class="top-row">
+      <div class="ref-panel">
+        <div class="ref-lbl">📷 מקור</div>
+        <canvas id="ref-canvas" width="76" height="76" style="border-radius:8px;display:block;"></canvas>
+      </div>
+      <div class="grid-wrap">
+        <div id="puzzle-grid"></div>
+      </div>
+    </div>
+    <div class="hint-lbl">לחץ על חתיכה ראשונה, אחר כך על שנייה — הן יתחלפו!</div>
+  </div>
+</div>
+
+<!-- ════ WIN ════ -->
+<div id="win-screen" class="screen">
+  <div class="win-dog">🐶</div>
+  <div class="win-title">כל הכבוד!</div>
+  <div class="stars-row">
+    <span class="star" id="s1">⭐</span>
+    <span class="star" id="s2">⭐</span>
+    <span class="star" id="s3">⭐</span>
+  </div>
+  <div class="win-panel">
+    <div><div class="ws-val" id="w-time">--</div><div class="ws-lbl">זמן</div></div>
+    <div><div class="ws-val" id="w-moves">--</div><div class="ws-lbl">מהלכים</div></div>
+  </div>
+  <div style="color:rgba(255,255,255,.8);font-size:16px;">רקסי שמח מאוד! 🐾</div>
+  <div class="win-btns">
+    <button class="btn-gold"  onclick="restartGame()">🔄 שחק שוב</button>
+    <button class="btn-glass" onclick="goHome()">🏠 תפריט</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  REXY SVG — full illustrated scene 600×600
+// ══════════════════════════════════════════════
+const SVG_SCENE = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600">
+<defs>
+  <radialGradient id="sunG" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#FFF9C4"/>
+    <stop offset="55%" stop-color="#FFD600"/>
+    <stop offset="100%" stop-color="#FF8F00"/>
+  </radialGradient>
+  <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1565C0"/>
+    <stop offset="45%" stop-color="#42A5F5"/>
+    <stop offset="100%" stop-color="#B3E5FC"/>
+  </linearGradient>
+  <linearGradient id="grassG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#A5D6A7"/>
+    <stop offset="100%" stop-color="#2E7D32"/>
+  </linearGradient>
+  <linearGradient id="hillG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#C8E6C9"/>
+    <stop offset="100%" stop-color="#66BB6A"/>
+  </linearGradient>
+  <linearGradient id="dogG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#DDA060"/>
+    <stop offset="100%" stop-color="#B07030"/>
+  </linearGradient>
+  <filter id="blur3"><feGaussianBlur stdDeviation="3"/></filter>
+  <filter id="blur6"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+
+<!-- Sky -->
+<rect width="600" height="600" fill="url(#skyG)"/>
+
+<!-- Stars (tiny) -->
+<g fill="#E3F2FD" opacity=".7">
+  <circle cx="22"  cy="30"  r="1.5"/>
+  <circle cx="60"  cy="18"  r="1.2"/>
+  <circle cx="105" cy="40"  r="1.0"/>
+  <circle cx="180" cy="22"  r="1.5"/>
+  <circle cx="240" cy="50"  r="1.0"/>
+  <circle cx="310" cy="15"  r="1.3"/>
+  <circle cx="410" cy="42"  r="1.0"/>
+  <circle cx="455" cy="18"  r="1.5"/>
+</g>
+
+<!-- Sun glow -->
+<circle cx="510" cy="90" r="85" fill="#FFE082" opacity=".22" filter="url(#blur6)"/>
+<!-- Sun rays -->
+<g stroke="#FFD600" stroke-width="4" stroke-linecap="round" opacity=".75">
+  <line x1="510" y1="18"  x2="510" y2="5"/>
+  <line x1="560" y1="40"  x2="570" y2="30"/>
+  <line x1="582" y1="90"  x2="596" y2="90"/>
+  <line x1="560" y1="140" x2="570" y2="150"/>
+  <line x1="510" y1="162" x2="510" y2="175"/>
+  <line x1="460" y1="140" x2="450" y2="150"/>
+  <line x1="438" y1="90"  x2="424" y2="90"/>
+  <line x1="460" y1="40"  x2="450" y2="30"/>
+</g>
+<circle cx="510" cy="90" r="58" fill="url(#sunG)"/>
+<!-- Sun face -->
+<circle cx="496" cy="80" r="6.5" fill="#E65100" opacity=".65"/>
+<circle cx="524" cy="80" r="6.5" fill="#E65100" opacity=".65"/>
+<path d="M491 102 Q510 118 529 102" stroke="#E65100" stroke-width="4" fill="none" stroke-linecap="round"/>
+
+<!-- Back hill -->
+<ellipse cx="300" cy="590" rx="460" ry="195" fill="url(#hillG)" opacity=".55"/>
+
+<!-- Cloud 1 (big) -->
+<g opacity=".96">
+  <ellipse cx="122" cy="118" rx="58" ry="34" fill="white"/>
+  <ellipse cx="80"  cy="130" rx="34" ry="26" fill="white"/>
+  <ellipse cx="164" cy="130" rx="40" ry="26" fill="white"/>
+  <ellipse cx="122" cy="136" rx="58" ry="21" fill="white"/>
+</g>
+<ellipse cx="122" cy="157" rx="52" ry="8" fill="rgba(0,0,0,.07)" filter="url(#blur3)"/>
+
+<!-- Cloud 2 -->
+<g opacity=".88">
+  <ellipse cx="345" cy="72"  rx="46" ry="28" fill="white"/>
+  <ellipse cx="310" cy="83"  rx="30" ry="22" fill="white"/>
+  <ellipse cx="380" cy="83"  rx="32" ry="22" fill="white"/>
+  <ellipse cx="345" cy="90"  rx="46" ry="18" fill="white"/>
+</g>
+
+<!-- Ground -->
+<rect x="0" y="462" width="600" height="138" fill="#4CAF50"/>
+<ellipse cx="300" cy="463" rx="320" ry="28" fill="#81C784"/>
+<rect x="0" y="480" width="600" height="120" fill="#388E3C"/>
+<!-- Grass edge highlight -->
+<ellipse cx="300" cy="461" rx="305" ry="17" fill="#A5D6A7" opacity=".7"/>
+
+<!-- Left fence -->
+<g fill="#8D6E63" stroke="#6D4C41" stroke-width="1.5">
+  <rect x="14" y="394" width="13" height="88" rx="3"/>
+  <rect x="56" y="394" width="13" height="88" rx="3"/>
+  <rect x="10" y="405" width="64" height="11" rx="4"/>
+  <rect x="10" y="440" width="64" height="11" rx="4"/>
+</g>
+<!-- Right fence -->
+<g fill="#8D6E63" stroke="#6D4C41" stroke-width="1.5">
+  <rect x="526" y="394" width="13" height="88" rx="3"/>
+  <rect x="568" y="394" width="13" height="88" rx="3"/>
+  <rect x="522" y="405" width="64" height="11" rx="4"/>
+  <rect x="522" y="440" width="64" height="11" rx="4"/>
+</g>
+
+<!-- Flowers -->
+<g transform="translate(72,458)">
+  <rect x="-3" y="-36" width="6" height="36" rx="3" fill="#2E7D32"/>
+  <ellipse cx="-11" cy="-22" rx="13" ry="6" fill="#388E3C" transform="rotate(-30,-11,-22)"/>
+  <circle cx="-10" cy="-34" r="9.5" fill="#EF5350"/>
+  <circle cx="10"  cy="-34" r="9.5" fill="#EF5350"/>
+  <circle cx="0"   cy="-46" r="9.5" fill="#EF5350"/>
+  <circle cx="0"   cy="-22" r="9.5" fill="#EF5350"/>
+  <circle cx="0"   cy="-34" r="8.5" fill="#FFD740"/>
+</g>
+<g transform="translate(155,464)">
+  <rect x="-3" y="-30" width="6" height="30" rx="3" fill="#2E7D32"/>
+  <circle cx="-9" cy="-27" r="8" fill="#CE93D8"/>
+  <circle cx="9"  cy="-27" r="8" fill="#CE93D8"/>
+  <circle cx="0"  cy="-37" r="8" fill="#CE93D8"/>
+  <circle cx="0"  cy="-17" r="8" fill="#CE93D8"/>
+  <circle cx="0"  cy="-27" r="7" fill="#FFF176"/>
+</g>
+<g transform="translate(446,460)">
+  <rect x="-3" y="-33" width="6" height="33" rx="3" fill="#2E7D32"/>
+  <circle cx="-9" cy="-30" r="8.5" fill="#FFB74D"/>
+  <circle cx="9"  cy="-30" r="8.5" fill="#FFB74D"/>
+  <circle cx="0"  cy="-41" r="8.5" fill="#FFB74D"/>
+  <circle cx="0"  cy="-19" r="8.5" fill="#FFB74D"/>
+  <circle cx="0"  cy="-30" r="7.5" fill="#E65100"/>
+</g>
+<g transform="translate(527,467)">
+  <rect x="-3" y="-28" width="6" height="28" rx="3" fill="#2E7D32"/>
+  <circle cx="-8" cy="-25" r="7.5" fill="#F48FB1"/>
+  <circle cx="8"  cy="-25" r="7.5" fill="#F48FB1"/>
+  <circle cx="0"  cy="-34" r="7.5" fill="#F48FB1"/>
+  <circle cx="0"  cy="-16" r="7.5" fill="#F48FB1"/>
+  <circle cx="0"  cy="-25" r="6.5" fill="#F8BBD0"/>
+</g>
+
+<!-- Bone -->
+<g transform="translate(88,443) rotate(-22)">
+  <rect x="-24" y="-7.5" width="48" height="15" rx="5" fill="#EEEEEE" stroke="#BDBDBD" stroke-width="1.5"/>
+  <circle cx="-24" cy="-9"  r="10" fill="#EEEEEE" stroke="#BDBDBD" stroke-width="1.5"/>
+  <circle cx="-24" cy="9"   r="10" fill="#EEEEEE" stroke="#BDBDBD" stroke-width="1.5"/>
+  <circle cx="24"  cy="-9"  r="10" fill="#EEEEEE" stroke="#BDBDBD" stroke-width="1.5"/>
+  <circle cx="24"  cy="9"   r="10" fill="#EEEEEE" stroke="#BDBDBD" stroke-width="1.5"/>
+</g>
+
+<!-- Bouncy ball -->
+<circle cx="492" cy="462" r="23" fill="#EF5350"/>
+<circle cx="492" cy="462" r="23" fill="none" stroke="white" stroke-width="3" stroke-dasharray="9 7" transform="rotate(-30,492,462)"/>
+<circle cx="492" cy="452" r="7" fill="white" opacity=".32"/>
+
+<!-- ══ DOG — Rexy ══ -->
+<!-- Ground shadow -->
+<ellipse cx="294" cy="513" rx="98" ry="19" fill="rgba(0,0,0,.25)" filter="url(#blur3)"/>
+
+<!-- Tail (behind body) -->
+<path d="M370 392 Q436 336 422 272 Q412 242 390 252 Q376 272 390 308 Q404 342 376 382"
+      fill="#C07840" stroke="#8B5530" stroke-width="2.5"/>
+<circle cx="392" cy="256" r="15" fill="#E8B896"/>
+
+<!-- Body -->
+<ellipse cx="294" cy="414" rx="94" ry="100" fill="url(#dogG)" stroke="#8B5530" stroke-width="2"/>
+<!-- Tummy lighter -->
+<ellipse cx="294" cy="434" rx="54" ry="64" fill="#EFC49A" opacity=".68"/>
+
+<!-- Hind legs -->
+<ellipse cx="212" cy="476" rx="37" ry="22" fill="#C07840" stroke="#8B5530" stroke-width="2"/>
+<ellipse cx="376" cy="476" rx="37" ry="22" fill="#C07840" stroke="#8B5530" stroke-width="2"/>
+
+<!-- Left ear (droopy) -->
+<path d="M216 215 Q196 268 200 325 Q202 350 224 345 Q242 333 237 293 Q232 255 243 218 Z"
+      fill="#7A4E2A" stroke="#5D3818" stroke-width="1.5"/>
+<path d="M221 226 Q204 272 208 318 Q210 336 224 331 Q234 323 231 290 Q228 256 237 228 Z"
+      fill="#9E6A42" opacity=".45"/>
+
+<!-- Right ear (droopy) -->
+<path d="M372 215 Q392 268 388 325 Q386 350 364 345 Q346 333 351 293 Q356 255 345 218 Z"
+      fill="#7A4E2A" stroke="#5D3818" stroke-width="1.5"/>
+<path d="M367 226 Q384 272 380 318 Q378 336 364 331 Q354 323 357 290 Q360 256 351 228 Z"
+      fill="#9E6A42" opacity=".45"/>
+
+<!-- Head -->
+<circle cx="294" cy="272" r="90" fill="url(#dogG)" stroke="#8B5530" stroke-width="2.5"/>
+
+<!-- Head top dark patch -->
+<ellipse cx="294" cy="226" rx="40" ry="32" fill="#7A4E2A" opacity=".52"/>
+
+<!-- Muzzle -->
+<ellipse cx="294" cy="298" rx="46" ry="38" fill="#EFC49A"/>
+
+<!-- Eye whites -->
+<ellipse cx="260" cy="259" rx="21" ry="23" fill="white" stroke="#C07840" stroke-width="1"/>
+<ellipse cx="328" cy="259" rx="21" ry="23" fill="white" stroke="#C07840" stroke-width="1"/>
+
+<!-- Irises -->
+<circle cx="262" cy="261" r="14.5" fill="#5C3410"/>
+<circle cx="330" cy="261" r="14.5" fill="#5C3410"/>
+
+<!-- Pupils -->
+<circle cx="263" cy="262" r="9"   fill="#120500"/>
+<circle cx="331" cy="262" r="9"   fill="#120500"/>
+
+<!-- Eye shine (main) -->
+<circle cx="268" cy="255" r="5"   fill="white"/>
+<circle cx="336" cy="255" r="5"   fill="white"/>
+<!-- Eye shine (small) -->
+<circle cx="259" cy="267" r="2.2" fill="white" opacity=".55"/>
+<circle cx="327" cy="267" r="2.2" fill="white" opacity=".55"/>
+
+<!-- Eyebrows -->
+<path d="M244 239 Q262 229 280 236" stroke="#5C3410" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+<path d="M308 236 Q326 229 344 239" stroke="#5C3410" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+
+<!-- Nose -->
+<ellipse cx="294" cy="294" rx="25" ry="18" fill="#120500"/>
+<ellipse cx="286" cy="287" rx="9"   ry="6"  fill="#3A1A10" opacity=".5"/>
+<line x1="280" y1="298" x2="270" y2="304" stroke="#070000" stroke-width="2" stroke-linecap="round"/>
+<line x1="308" y1="298" x2="318" y2="304" stroke="#070000" stroke-width="2" stroke-linecap="round"/>
+
+<!-- Mouth -->
+<path d="M274 310 Q294 328 314 310" stroke="#5C2A10" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+<line x1="294" y1="310" x2="294" y2="318" stroke="#5C2A10" stroke-width="2.5"/>
+
+<!-- Tongue -->
+<path d="M280 320 Q294 340 308 320" fill="#FF6B6B"/>
+<path d="M286 320 Q294 336 302 320" fill="#D84040" opacity=".5"/>
+<line x1="294" y1="320" x2="294" y2="338" stroke="#D84040" stroke-width="2.5" stroke-linecap="round"/>
+
+<!-- Cheeks blush -->
+<circle cx="235" cy="290" r="21" fill="#FF8A65" opacity=".22"/>
+<circle cx="353" cy="290" r="21" fill="#FF8A65" opacity=".22"/>
+
+<!-- Collar -->
+<path d="M230 342 Q294 360 358 342" stroke="#C62828" stroke-width="19" fill="none" stroke-linecap="round"/>
+<path d="M234 338 Q294 354 354 338" stroke="rgba(255,110,110,.38)" stroke-width="5" fill="none" stroke-linecap="round"/>
+<!-- Studs -->
+<g fill="#FFD700" stroke="#CC9900" stroke-width="1">
+  <circle cx="250" cy="348" r="6"/>
+  <circle cx="270" cy="352" r="6"/>
+  <circle cx="294" cy="354" r="6"/>
+  <circle cx="318" cy="352" r="6"/>
+  <circle cx="338" cy="348" r="6"/>
+</g>
+<!-- Heart tag -->
+<path d="M294 362 L285 372 Q283 379 290 383 L294 387 L298 383 Q305 379 303 372 Z"
+      fill="#FFD700" stroke="#CC8800" stroke-width="1.5"/>
+<text x="294" y="381" text-anchor="middle" font-size="8" font-weight="bold" fill="#7A5800" font-family="Arial">R</text>
+
+<!-- Front left paw -->
+<ellipse cx="248" cy="494" rx="35" ry="23" fill="#C07840" stroke="#8B5530" stroke-width="2"/>
+<ellipse cx="236" cy="508" rx="10" ry="7.5" fill="#A86028" stroke="#7A4520" stroke-width="1.5"/>
+<ellipse cx="249" cy="511" rx="10" ry="7.5" fill="#A86028" stroke="#7A4520" stroke-width="1.5"/>
+<ellipse cx="262" cy="508" rx="10" ry="7.5" fill="#A86028" stroke="#7A4520" stroke-width="1.5"/>
+
+<!-- Front right paw -->
+<ellipse cx="340" cy="494" rx="35" ry="23" fill="#C07840" stroke="#8B5530" stroke-width="2"/>
+<ellipse cx="328" cy="508" rx="10" ry="7.5" fill="#A86028" stroke="#7A4520" stroke-width="1.5"/>
+<ellipse cx="341" cy="511" rx="10" ry="7.5" fill="#A86028" stroke="#7A4520" stroke-width="1.5"/>
+<ellipse cx="354" cy="508" rx="10" ry="7.5" fill="#A86028" stroke="#7A4520" stroke-width="1.5"/>
+
+<!-- Paw prints on ground -->
+<g fill="#5C3410" opacity=".32">
+  <ellipse cx="442" cy="477" rx="13" ry="11"/>
+  <circle cx="428" cy="462" r="5.5"/>
+  <circle cx="442" cy="459" r="5.5"/>
+  <circle cx="456" cy="462" r="5.5"/>
+</g>
+<g fill="#5C3410" opacity=".18" transform="translate(-16,18) rotate(8,442,477)">
+  <ellipse cx="442" cy="477" rx="10" ry="8.5"/>
+  <circle cx="431" cy="466" r="4.5"/>
+  <circle cx="442" cy="463" r="4.5"/>
+  <circle cx="453" cy="466" r="4.5"/>
+</g>
+</svg>`;
+
+// ══════════════════════════════════════════════
+//  State
+// ══════════════════════════════════════════════
+let gridSize     = 3;
+let pieces       = [];
+let selectedIdx  = null;
+let moves        = 0;
+let startTime    = null;
+let timerID      = null;
+let imgCanvas    = null;   // offscreen 600×600
+
+// ══════════════════════════════════════════════
+//  Audio (Web Audio API)
+// ══════════════════════════════════════════════
+let audioCtx = null;
+function ac() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function tone(freq, dur, vol = .28, type = 'sine') {
+  try {
+    const ctx = ac(), o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type;
+    o.frequency.setValueAtTime(freq, ctx.currentTime);
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+const sndSelect  = () => tone(700, .09);
+const sndSwap    = () => { tone(880,.1); setTimeout(()=>tone(1100,.1),.1); };
+const sndCorrect = () => [523,659,784].forEach((f,i) => setTimeout(()=>tone(f,.18,.3),i*75));
+const sndWin     = () => [523,659,784,1047,1319].forEach((f,i) => setTimeout(()=>tone(f,.25,.35,'triangle'),i*110));
+
+// ══════════════════════════════════════════════
+//  Particles
+// ══════════════════════════════════════════════
+(function initParticles() {
+  const cv = document.getElementById('particles-canvas');
+  const cx = cv.getContext('2d');
+  const resize = () => { cv.width = innerWidth; cv.height = innerHeight; };
+  resize();
+  window.addEventListener('resize', resize);
+  const syms = ['🐾','✦','⭐','·'];
+  const pts = Array.from({length:26}, () => ({
+    x: Math.random()*innerWidth,
+    y: Math.random()*innerHeight,
+    sz: 8 + Math.random()*14,
+    spd: .28 + Math.random()*.55,
+    dr: (Math.random()-.5)*.35,
+    op: .04 + Math.random()*.11,
+    s: syms[Math.random()*syms.length|0]
+  }));
+  (function draw() {
+    cx.clearRect(0,0,cv.width,cv.height);
+    pts.forEach(p => {
+      cx.globalAlpha = p.op;
+      cx.font = p.sz+'px serif';
+      cx.fillStyle = '#fff';
+      cx.fillText(p.s, p.x, p.y);
+      p.y -= p.spd; p.x += p.dr;
+      if (p.y < -30) { p.y = cv.height+30; p.x = Math.random()*cv.width; }
+    });
+    cx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  })();
+})();
+
+// ══════════════════════════════════════════════
+//  Confetti
+// ══════════════════════════════════════════════
+let confettiOn = false;
+function launchConfetti() {
+  const cv = document.getElementById('confetti-canvas');
+  cv.width = innerWidth; cv.height = innerHeight;
+  const cx = cv.getContext('2d');
+  confettiOn = true;
+  const cols = ['#FFD700','#FF4081','#7C4DFF','#00E676','#FF6D00','#00BCD4','#F06292'];
+  const bits = Array.from({length:110}, () => ({
+    x: Math.random()*cv.width, y: -20-Math.random()*80,
+    w: 7+Math.random()*9, h: 4+Math.random()*6,
+    spd: 2+Math.random()*4, dr: (Math.random()-.5)*2,
+    rot: Math.random()*360, rs: (Math.random()-.5)*9,
+    col: cols[Math.random()*cols.length|0]
+  }));
+  (function draw() {
+    if (!confettiOn) { cx.clearRect(0,0,cv.width,cv.height); return; }
+    cx.clearRect(0,0,cv.width,cv.height);
+    bits.forEach(b => {
+      cx.save(); cx.translate(b.x+b.w/2,b.y+b.h/2); cx.rotate(b.rot*Math.PI/180);
+      cx.fillStyle = b.col; cx.globalAlpha = .92;
+      cx.fillRect(-b.w/2,-b.h/2,b.w,b.h);
+      cx.restore();
+      b.y += b.spd; b.x += b.dr; b.rot += b.rs;
+      if (b.y > cv.height+20) { b.y = -20; b.x = Math.random()*cv.width; }
+    });
+    requestAnimationFrame(draw);
+  })();
+  setTimeout(() => { confettiOn = false; }, 7000);
+}
+
+// ══════════════════════════════════════════════
+//  Load SVG → offscreen canvas
+// ══════════════════════════════════════════════
+function loadImage() {
+  return new Promise(resolve => {
+    const blob = new Blob([SVG_SCENE], {type:'image/svg+xml'});
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image();
+    img.onload = () => {
+      imgCanvas = document.createElement('canvas');
+      imgCanvas.width = imgCanvas.height = 600;
+      imgCanvas.getContext('2d').drawImage(img, 0, 0, 600, 600);
+      URL.revokeObjectURL(url);
+      resolve();
+    };
+    img.onerror = () => {
+      imgCanvas = document.createElement('canvas');
+      imgCanvas.width = imgCanvas.height = 600;
+      const ctx = imgCanvas.getContext('2d');
+      const g = ctx.createLinearGradient(0,0,600,600);
+      g.addColorStop(0,'#29B6F6'); g.addColorStop(1,'#66BB6A');
+      ctx.fillStyle = g; ctx.fillRect(0,0,600,600);
+      ctx.font = '220px serif'; ctx.textAlign = 'center';
+      ctx.fillText('🐕', 300, 400);
+      resolve();
+    };
+    img.src = url;
+  });
+}
+
+// ══════════════════════════════════════════════
+//  Piece creation & shuffle
+// ══════════════════════════════════════════════
+function calcPieceSize() {
+  const maxGrid = Math.min(innerWidth - 110, innerHeight - 180, 420);
+  return Math.floor((maxGrid - (gridSize-1)*3) / gridSize);
+}
+
+function buildPieces() {
+  const src = 600 / gridSize;
+  const tot = gridSize * gridSize;
+  pieces = Array.from({length: tot}, (_, i) => {
+    const row = (i / gridSize)|0, col = i % gridSize;
+    const pc = document.createElement('canvas');
+    pc.width = pc.height = src;
+    pc.getContext('2d').drawImage(imgCanvas, col*src, row*src, src, src, 0, 0, src, src);
+    return { correct: i, pos: i, cv: pc };
+  });
+  // Fisher-Yates shuffle of pos values
+  const pos = Array.from({length:tot},(_,i)=>i);
+  for (let i = tot-1; i > 0; i--) {
+    const j = Math.random()*(i+1)|0;
+    [pos[i], pos[j]] = [pos[j], pos[i]];
+  }
+  // Safety: if shuffle = identity, do one swap
+  const isIdentity = pos.every((v,i) => v===i);
+  if (isIdentity && tot > 1) [pos[0], pos[1]] = [pos[1], pos[0]];
+  pieces.forEach((p, i) => p.pos = pos[i]);
+}
+
+// ══════════════════════════════════════════════
+//  Render grid
+// ══════════════════════════════════════════════
+function renderGrid() {
+  const ps  = calcPieceSize();
+  const grid = document.getElementById('puzzle-grid');
+  grid.innerHTML = '';
+  grid.style.gridTemplateColumns = `repeat(${gridSize}, ${ps}px)`;
+  grid.style.gridTemplateRows    = `repeat(${gridSize}, ${ps}px)`;
+
+  const slots = new Array(gridSize * gridSize);
+  pieces.forEach((p, pi) => {
+    const slot = document.createElement('div');
+    slot.className = 'piece-slot' + (p.correct === p.pos ? ' correct' : '');
+    slot.style.cssText = `width:${ps}px;height:${ps}px;`;
+    slot.dataset.pi = pi;
+
+    const c = document.createElement('canvas');
+    c.width = c.height = 600 / gridSize;
+    c.style.cssText = `width:${ps}px;height:${ps}px;display:block;`;
+    c.getContext('2d').drawImage(p.cv, 0, 0);
+    slot.appendChild(c);
+    slot.addEventListener('click', () => onPieceClick(pi));
+    slots[p.pos] = slot;
+  });
+  for (let i = 0; i < slots.length; i++) grid.appendChild(slots[i]);
+
+  // Reference
+  const ref = document.getElementById('ref-canvas').getContext('2d');
+  ref.drawImage(imgCanvas, 0, 0, 600, 600, 0, 0, 76, 76);
+
+  // Progress
+  const cor = countCorrect();
+  document.getElementById('prog-val').textContent = cor + '/' + pieces.length;
+  document.getElementById('prog-fill').style.width = (cor/pieces.length*100) + '%';
+}
+
+function slotByPos(pos) {
+  return document.querySelector(`[data-pi]`).parentElement.children[pos];
+}
+
+// ══════════════════════════════════════════════
+//  Click / swap logic
+// ══════════════════════════════════════════════
+function onPieceClick(pi) {
+  const p = pieces[pi];
+  if (p.correct === p.pos) return; // already locked in place
+
+  if (selectedIdx === null) {
+    selectedIdx = pi;
+    document.querySelector(`[data-pi="${pi}"]`).classList.add('selected');
+    sndSelect();
+    return;
+  }
+  if (selectedIdx === pi) {
+    document.querySelector(`[data-pi="${pi}"]`).classList.remove('selected');
+    selectedIdx = null;
+    return;
+  }
+
+  // Do the swap
+  document.querySelector(`[data-pi="${selectedIdx}"]`).classList.remove('selected');
+  const a = selectedIdx, b = pi;
+  selectedIdx = null;
+  [pieces[a].pos, pieces[b].pos] = [pieces[b].pos, pieces[a].pos];
+  moves++;
+  sndSwap();
+  renderGrid();
+
+  const correct = [a, b].filter(i => pieces[i].correct === pieces[i].pos);
+  correct.forEach(i => {
+    const el = document.querySelector(`[data-pi="${i}"]`);
+    if (el) {
+      el.classList.add('snap');
+      setTimeout(() => el.classList.remove('snap'), 420);
+    }
+    sndCorrect();
+  });
+
+  if (checkWin()) setTimeout(showWin, 650);
+}
+
+const countCorrect = () => pieces.filter(p => p.correct === p.pos).length;
+const checkWin     = () => pieces.every(p => p.correct === p.pos);
+
+// ══════════════════════════════════════════════
+//  Timer
+// ══════════════════════════════════════════════
+function startTimer() {
+  startTime = Date.now();
+  clearInterval(timerID);
+  timerID = setInterval(() => {
+    const s = ((Date.now()-startTime)/1000)|0;
+    document.getElementById('timer-val').textContent =
+      String((s/60)|0).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+  }, 1000);
+}
+function stopTimer() { clearInterval(timerID); }
+
+// ══════════════════════════════════════════════
+//  Win
+// ══════════════════════════════════════════════
+function showWin() {
+  stopTimer();
+  const elapsed = ((Date.now()-startTime)/1000)|0;
+  const n = pieces.length;
+  const maxT = n * 14, maxM = n * 4;
+  const stars = (elapsed<maxT*.4 && moves<maxM*.6) ? 3 :
+                (elapsed<maxT*.7 && moves<maxM)    ? 2 : 1;
+  const m = (elapsed/60)|0, s = elapsed%60;
+  document.getElementById('w-time').textContent  = (m?m+"מ׳ ":"") + s + "ש׳";
+  document.getElementById('w-moves').textContent = moves;
+  ['s1','s2','s3'].forEach((id,i) => document.getElementById(id).classList.toggle('lit', i<stars));
+  showScreen('win-screen');
+  launchConfetti();
+  sndWin();
+}
+
+// ══════════════════════════════════════════════
+//  Navigation
+// ══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+async function startGame(size) {
+  gridSize = size; moves = 0; selectedIdx = null;
+  stopTimer();
+  showScreen('game-screen');
+  document.getElementById('prog-val').textContent  = '0/' + (size*size);
+  document.getElementById('prog-fill').style.width = '0%';
+  document.getElementById('timer-val').textContent = '00:00';
+  if (!imgCanvas) await loadImage();
+  buildPieces();
+  renderGrid();
+  startTimer();
+}
+
+function restartGame() { startGame(gridSize); }
+
+function goHome() {
+  stopTimer(); selectedIdx = null;
+  showScreen('home-screen');
+}
+
+// ══════════════════════════════════════════════
+//  Home preview
+// ══════════════════════════════════════════════
+async function initPreview() {
+  if (!imgCanvas) await loadImage();
+  const el = document.querySelector('.dog-preview');
+  const cv = document.getElementById('preview-canvas');
+  const sz = el.offsetWidth || 240;
+  cv.width = cv.height = sz;
+  cv.getContext('2d').drawImage(imgCanvas, 0, 0, 600, 600, 0, 0, sz, sz);
+}
+setTimeout(initPreview, 120);
+window.addEventListener('resize', () => { if (document.getElementById('home-screen').classList.contains('active')) initPreview(); });
+</script>
+</body>
+</html>
