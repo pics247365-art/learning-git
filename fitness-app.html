@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0a0a0f">
+<title>FitPro — אימון כושר</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12121a;
+  --bg3: #1a1a26;
+  --card: #1e1e2e;
+  --card2: #252538;
+  --border: #2e2e45;
+  --text: #f0f0ff;
+  --muted: #8888aa;
+  --accent: #ff5e2c;
+  --accent2: #ff8c5a;
+  --blue: #4f8ef7;
+  --purple: #7c5cbf;
+  --green: #2ed573;
+  --yellow: #ffd32a;
+  --red: #ff4757;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --nav-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+
+/* ─── Layout ─── */
+#app { display: flex; flex-direction: column; height: 100dvh; height: 100vh; }
+#screen { flex: 1; overflow-y: auto; overflow-x: hidden; scroll-behavior: smooth; }
+#screen::-webkit-scrollbar { display: none; }
+
+/* ─── Nav ─── */
+nav {
+  display: flex; justify-content: space-around; align-items: center;
+  height: var(--nav-h); background: var(--bg2);
+  border-top: 1px solid var(--border);
+  padding-bottom: var(--safe-bottom);
+  flex-shrink: 0; z-index: 100;
+}
+.nav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: none; color: var(--muted);
+  font-size: 10px; padding: 8px 16px; cursor: pointer;
+  transition: color .2s, transform .15s;
+}
+.nav-btn .icon { font-size: 22px; line-height: 1; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn:active { transform: scale(.9); }
+
+/* ─── Screens ─── */
+.screen { display: none; padding: 20px 16px 24px; animation: fadeUp .3s ease; }
+.screen.active { display: block; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+/* ─── Typography ─── */
+h1 { font-size: 28px; font-weight: 800; letter-spacing: -.5px; }
+h2 { font-size: 20px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 600; }
+.muted { color: var(--muted); font-size: 13px; }
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+}
+
+/* ─── Cards ─── */
+.card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 16px;
+  transition: transform .15s, box-shadow .15s;
+}
+.card:active { transform: scale(.98); }
+.card-row { display: flex; align-items: center; gap: 12px; }
+
+/* ─── Buttons ─── */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: var(--radius-sm); font-size: 15px; font-weight: 700;
+  padding: 14px 24px; cursor: pointer; transition: all .15s; width: 100%;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: linear-gradient(135deg, var(--accent), #e03a00); color: #fff; }
+.btn-secondary { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost { background: transparent; color: var(--muted); font-size: 14px; }
+.btn-green { background: linear-gradient(135deg, #1db954, #0f7a36); color: #fff; }
+.btn-blue { background: linear-gradient(135deg, var(--blue), #2255cc); color: #fff; }
+.btn-sm { padding: 10px 18px; font-size: 13px; width: auto; border-radius: 8px; }
+
+/* ─── HOME ─── */
+.home-header {
+  background: linear-gradient(145deg, #1a0f2e, #0d1a3a, #1a0a0a);
+  border-radius: var(--radius); padding: 24px 20px; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.home-header::before {
+  content: ''; position: absolute; top: -30px; left: -30px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,94,44,.25), transparent 70%);
+}
+.home-header::after {
+  content: ''; position: absolute; bottom: -40px; right: -20px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,142,247,.2), transparent 70%);
+}
+.greeting { font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+.home-name { font-size: 30px; font-weight: 900; position: relative; z-index: 1; }
+.accent-text { color: var(--accent); }
+.streak-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; position: relative; z-index: 1; }
+.streak-pill {
+  background: rgba(255,94,44,.15); border: 1px solid rgba(255,94,44,.3);
+  border-radius: 20px; padding: 6px 14px; font-size: 13px; font-weight: 700; color: var(--accent2);
+}
+
+.section-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; margin-top: 24px; }
+
+.today-card {
+  background: linear-gradient(135deg, var(--card), var(--card2));
+  border-radius: var(--radius); border: 1px solid var(--border);
+  padding: 20px; cursor: pointer; position: relative; overflow: hidden;
+}
+.today-card::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px; background: linear-gradient(to bottom, var(--accent), var(--purple));
+}
+.today-tag { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.today-title { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.today-meta { display: flex; gap: 16px; margin-top: 12px; }
+.meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.meta-icon { font-size: 16px; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat-card { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 16px; text-align: center; }
+.stat-num { font-size: 28px; font-weight: 900; color: var(--accent); }
+.stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.muscle-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.muscle-chip {
+  background: var(--card2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 6px 14px; font-size: 12px; color: var(--muted);
+}
+
+/* ─── PLANS ─── */
+.plan-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 20px; margin-bottom: 14px;
+  cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+}
+.plan-card.selected { border-color: var(--accent); }
+.plan-card-bg {
+  position: absolute; left: -20px; bottom: -30px;
+  font-size: 100px; opacity: .06; line-height: 1; pointer-events: none;
+}
+.plan-header { display: flex; align-items: flex-start; justify-content: space-between; }
+.plan-icon { font-size: 32px; margin-bottom: 10px; }
+.plan-name { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+.plan-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 14px; }
+.plan-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.plan-tag { background: var(--card2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.check-circle {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; transition: all .2s;
+}
+.check-circle.on { background: var(--accent); border-color: var(--accent); }
+
+.day-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.day-item {
+  background: var(--card2); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+}
+.day-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex-shrink: 0; }
+.day-info { flex: 1; }
+.day-name { font-size: 15px; font-weight: 700; }
+.day-ex { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.day-arr { color: var(--muted); font-size: 18px; }
+
+/* ─── WORKOUT ─── */
+.workout-header { text-align: center; margin-bottom: 24px; }
+.workout-progress-bar { height: 4px; background: var(--card2); border-radius: 4px; overflow: hidden; margin-bottom: 20px; }
+.workout-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--blue)); border-radius: 4px; transition: width .4s ease; }
+
+.exercise-card {
+  background: linear-gradient(145deg, var(--card), var(--card2));
+  border-radius: var(--radius); border: 1px solid var(--border); padding: 24px;
+  text-align: center; margin-bottom: 20px;
+}
+.ex-muscle { font-size: 11px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.ex-name { font-size: 26px; font-weight: 900; margin-bottom: 8px; }
+.ex-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+.ex-big { display: flex; justify-content: center; gap: 40px; margin-bottom: 20px; }
+.ex-stat { text-align: center; }
+.ex-stat-num { font-size: 42px; font-weight: 900; color: var(--accent); line-height: 1; }
+.ex-stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.sets-track { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+.set-dot {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--border); display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--muted); transition: all .25s;
+}
+.set-dot.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+.set-dot.current { border-color: var(--accent); color: var(--accent); animation: pulse-border 1.2s infinite; }
+@keyframes pulse-border { 0%,100% { box-shadow: 0 0 0 0 rgba(255,94,44,.4); } 50% { box-shadow: 0 0 0 8px rgba(255,94,44,0); } }
+
+.workout-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-done { background: linear-gradient(135deg, var(--green), #0d7a36); color: #fff; }
+
+/* ─── REST TIMER ─── */
+.rest-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; }
+.timer-ring { position: relative; width: 200px; height: 200px; margin: 0 auto 24px; }
+.timer-svg { transform: rotate(-90deg); }
+.timer-track { fill: none; stroke: var(--card2); stroke-width: 8; }
+.timer-fill { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset .9s linear; }
+.timer-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.timer-num { font-size: 52px; font-weight: 900; color: var(--text); line-height: 1; }
+.timer-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.rest-presets { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+.preset-btn {
+  background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 18px; font-size: 14px; font-weight: 700; color: var(--text);
+  cursor: pointer; transition: all .15s;
+}
+.preset-btn.active, .preset-btn:active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* ─── PROGRESS ─── */
+.progress-hero {
+  background: linear-gradient(145deg, #0d1a2e, #1a0f2e);
+  border-radius: var(--radius); padding: 24px; margin-bottom: 20px; text-align: center;
+}
+.progress-big { font-size: 64px; font-weight: 900; color: var(--accent); line-height: 1; }
+.progress-label { font-size: 14px; color: var(--muted); margin-top: 8px; }
+
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px; }
+.week-day { text-align: center; }
+.week-label { font-size: 9px; color: var(--muted); margin-bottom: 5px; font-weight: 600; text-transform: uppercase; }
+.week-bar-wrap { height: 64px; display: flex; align-items: flex-end; justify-content: center; }
+.week-bar { width: 100%; border-radius: 4px; background: var(--card2); border: 1px solid var(--border); min-height: 8px; transition: height .4s ease; }
+.week-bar.done { background: linear-gradient(to top, var(--accent), var(--purple)); border-color: transparent; }
+.week-bar.today { background: linear-gradient(to top, var(--blue), var(--purple)); border-color: transparent; animation: bar-glow 2s infinite; }
+@keyframes bar-glow { 0%,100%{box-shadow:0 0 0 0 rgba(79,142,247,.4)}50%{box-shadow:0 0 12px 4px rgba(79,142,247,.2)} }
+
+.log-list { display: flex; flex-direction: column; gap: 10px; }
+.log-item {
+  background: var(--card); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.log-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.log-info { flex: 1; }
+.log-name { font-size: 14px; font-weight: 700; }
+.log-date { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.log-dur { font-size: 13px; color: var(--accent); font-weight: 700; }
+
+/* ─── SETTINGS ─── */
+.settings-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; margin: 0 auto 16px;
+}
+.settings-name { text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.settings-sub { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+.settings-group { margin-bottom: 20px; }
+.settings-row {
+  background: var(--card); border-radius: var(--radius-sm);
+  border: 1px solid var(--border); padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px; margin-bottom: 2px;
+}
+.settings-row:first-child { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+.settings-row:last-child { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+.settings-row:only-child { border-radius: var(--radius-sm); }
+.settings-icon { font-size: 20px; width: 36px; height: 36px; background: var(--card2); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.settings-label { flex: 1; font-size: 15px; font-weight: 600; }
+.settings-val { font-size: 14px; color: var(--muted); }
+.settings-input {
+  background: transparent; border: none; color: var(--text);
+  font-size: 15px; font-weight: 700; text-align: left; width: 100%;
+  font-family: inherit;
+}
+.settings-input:focus { outline: none; }
+.toggle {
+  width: 48px; height: 28px; border-radius: 14px; background: var(--card2);
+  border: 1px solid var(--border); cursor: pointer; position: relative;
+  transition: background .2s, border-color .2s; flex-shrink: 0;
+}
+.toggle.on { background: var(--accent); border-color: var(--accent); }
+.toggle::after {
+  content: ''; position: absolute; top: 3px; right: 3px;
+  width: 20px; height: 20px; border-radius: 50%; background: #fff;
+  transition: transform .2s;
+}
+.toggle.on::after { transform: translateX(-20px); }
+
+/* ─── Modals ─── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+  z-index: 200; display: flex; align-items: flex-end; opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg2); border-radius: var(--radius) var(--radius) 0 0;
+  border: 1px solid var(--border); border-bottom: none;
+  padding: 24px 20px 32px; width: 100%; max-height: 90dvh; overflow-y: auto;
+  transform: translateY(60px); transition: transform .3s ease;
+}
+.modal-overlay.show .modal { transform: none; }
+.modal-handle { width: 40px; height: 4px; border-radius: 4px; background: var(--border); margin: 0 auto 20px; }
+.modal-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; }
+
+/* ─── Workout complete ─── */
+.complete-screen { text-align: center; padding: 40px 20px; }
+.complete-emoji { font-size: 80px; margin-bottom: 16px; animation: pop .5s cubic-bezier(.175,.885,.32,1.275); }
+@keyframes pop { from{transform:scale(0)}to{transform:scale(1)} }
+.complete-title { font-size: 32px; font-weight: 900; margin-bottom: 8px; }
+.complete-sub { color: var(--muted); margin-bottom: 32px; }
+.complete-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+.complete-stat { background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 16px 8px; text-align: center; }
+.complete-stat-num { font-size: 26px; font-weight: 900; color: var(--accent); }
+.complete-stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* ─── Onboarding ─── */
+.onboard { position: fixed; inset: 0; background: var(--bg); z-index: 300; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
+.onboard-logo { font-size: 64px; margin-bottom: 24px; }
+.onboard h1 { font-size: 36px; font-weight: 900; margin-bottom: 12px; }
+.onboard p { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 40px; }
+.onboard-input {
+  background: var(--card); border: 2px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-size: 18px; font-weight: 700; padding: 16px 20px;
+  width: 100%; margin-bottom: 12px; font-family: inherit; text-align: center;
+  transition: border-color .2s;
+}
+.onboard-input:focus { outline: none; border-color: var(--accent); }
+
+/* ─── Utils ─── */
+.hidden { display: none !important; }
+.flex { display: flex; }
+.gap-8 { gap: 8px; }
+.gap-10 { gap: 10px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.text-center { text-align: center; }
+.empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<!-- Onboarding -->
+<div class="onboard" id="onboard">
+  <div class="onboard-logo">🏋️</div>
+  <h1>FitPro</h1>
+  <p>אפליקציית הכושר שתכניס אותך לפורמה.<br>קדימה, נתחיל!</p>
+  <input class="onboard-input" id="onboard-name" placeholder="מה שמך?" maxlength="20" autocomplete="off">
+  <button class="btn btn-primary" id="onboard-btn" style="margin-top:8px" onclick="finishOnboard()">
+    בוא נתחיל 🔥
+  </button>
+</div>
+
+<!-- App -->
+<div id="app">
+  <div id="screen">
+
+    <!-- HOME -->
+    <div class="screen active" id="s-home">
+      <div class="home-header">
+        <div class="greeting">שלום,</div>
+        <div class="home-name"><span id="home-name" class="accent-text">חבר</span> 👊</div>
+        <div class="streak-row">
+          <div class="streak-pill">🔥 <span id="streak-num">0</span> ימי רצף</div>
+          <div class="muted" id="streak-msg">התחל היום!</div>
+        </div>
+      </div>
+
+      <div class="section-title">אימון היום</div>
+      <div class="today-card card" id="today-card" onclick="startTodayWorkout()">
+        <div class="today-tag" id="today-plan-label">תוכנית כוח</div>
+        <div class="today-title" id="today-day-name">בחר תוכנית אימון</div>
+        <div class="muted" id="today-day-desc">עבור ל"תוכניות" כדי לבחור</div>
+        <div class="today-meta">
+          <div class="meta-item"><span class="meta-icon">⏱</span><span id="today-dur">—</span></div>
+          <div class="meta-item"><span class="meta-icon">🏋️</span><span id="today-excount">—</span></div>
+          <div class="meta-item"><span class="meta-icon">💪</span><span id="today-sets">—</span></div>
+        </div>
+      </div>
+
+      <div class="section-title">סטטיסטיקות</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">סה"כ אימונים</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-week">0</div>
+          <div class="stat-label">השבוע</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-streak">0</div>
+          <div class="stat-label">שיא רצף</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-min">0</div>
+          <div class="stat-label">דקות סה"כ</div>
+        </div>
+      </div>
+
+      <div class="section-title">שרירים שאומנו</div>
+      <div class="muscle-row" id="muscle-row">
+        <div class="muscle-chip muted">עוד אין נתונים</div>
+      </div>
+    </div>
+
+    <!-- PLANS -->
+    <div class="screen" id="s-plans">
+      <h2 style="margin-bottom:4px">תוכניות אימון</h2>
+      <p class="muted mb-16">בחר תוכנית ולחץ על יום להתחלת אימון</p>
+
+      <div id="plan-cards"></div>
+
+      <div id="plan-days-section" class="hidden">
+        <div class="section-title" id="plan-days-title">ימי תוכנית</div>
+        <div class="day-list" id="plan-days-list"></div>
+      </div>
+    </div>
+
+    <!-- WORKOUT (active) -->
+    <div class="screen" id="s-workout">
+      <div id="workout-body"></div>
+    </div>
+
+    <!-- PROGRESS -->
+    <div class="screen" id="s-progress">
+      <h2 style="margin-bottom:16px">ההתקדמות שלי</h2>
+
+      <div class="progress-hero">
+        <div class="progress-big" id="prog-streak">0</div>
+        <div class="progress-label">🔥 ימי רצף רצופים</div>
+      </div>
+
+      <div class="section-title">השבוע</div>
+      <div class="week-grid" id="week-grid"></div>
+
+      <div class="section-title" style="margin-top:8px">היסטוריית אימונים</div>
+      <div class="log-list" id="log-list"></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="s-settings">
+      <div class="settings-avatar">🏋️</div>
+      <div class="settings-name" id="set-name-display">חבר</div>
+      <div class="settings-sub">מוכן לאימון</div>
+
+      <div class="settings-group">
+        <div class="section-title">פרופיל</div>
+        <div class="settings-row">
+          <div class="settings-icon">👤</div>
+          <div class="settings-label">שם</div>
+          <input class="settings-input" id="set-name-input" maxlength="20" onchange="saveName(this.value)" placeholder="שמך">
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="section-title">העדפות</div>
+        <div class="settings-row">
+          <div class="settings-icon">🔔</div>
+          <div class="settings-label">צליל מנוחה</div>
+          <div class="toggle" id="toggle-sound" onclick="toggleSound()"></div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-icon">📳</div>
+          <div class="settings-label">רטט</div>
+          <div class="toggle on" id="toggle-vibrate" onclick="toggleVibrate()"></div>
+        </div>
+      </div>
+
+      <div class="settings-group">
+        <div class="section-title">אפשרויות</div>
+        <div class="settings-row" onclick="resetProgress()" style="cursor:pointer">
+          <div class="settings-icon">🗑️</div>
+          <div class="settings-label">איפוס התקדמות</div>
+          <div class="settings-val">›</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Nav -->
+  <nav>
+    <button class="nav-btn active" data-screen="home" onclick="nav('home')">
+      <span class="icon">🏠</span>בית
+    </button>
+    <button class="nav-btn" data-screen="plans" onclick="nav('plans')">
+      <span class="icon">📋</span>תוכניות
+    </button>
+    <button class="nav-btn" data-screen="progress" onclick="nav('progress')">
+      <span class="icon">📈</span>התקדמות
+    </button>
+    <button class="nav-btn" data-screen="settings" onclick="nav('settings')">
+      <span class="icon">⚙️</span>הגדרות
+    </button>
+  </nav>
+</div>
+
+<!-- Rest Modal -->
+<div class="modal-overlay" id="rest-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title text-center">⏱ זמן מנוחה</div>
+    <div class="rest-screen">
+      <div class="timer-ring">
+        <svg class="timer-svg" width="200" height="200" viewBox="0 0 200 200">
+          <circle class="timer-track" cx="100" cy="100" r="88"/>
+          <circle class="timer-fill" id="timer-fill" cx="100" cy="100" r="88"
+            stroke-dasharray="553" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-label">
+          <div class="timer-num" id="timer-num">60</div>
+          <div class="timer-sub">שניות</div>
+        </div>
+      </div>
+      <div class="rest-presets">
+        <button class="preset-btn active" onclick="setRestTime(30)">30s</button>
+        <button class="preset-btn active" onclick="setRestTime(60)">60s</button>
+        <button class="preset-btn" onclick="setRestTime(90)">90s</button>
+        <button class="preset-btn" onclick="setRestTime(120)">2m</button>
+      </div>
+      <button class="btn btn-primary" onclick="skipRest()">דלג על מנוחה ›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const PLANS = {
+  strength: {
+    name: 'כוח ושרירים',
+    icon: '💪',
+    desc: 'תוכנית 5 ימים לבניית מסת שריר וכוח. כל יום מתמקד בקבוצת שרירים שונה.',
+    tags: ['5 ימים', 'ביניים-מתקדם', 'משקולות'],
+    color: '#ff5e2c',
+    days: [
+      {
+        name: 'חזה + טריצפס',
+        muscle: 'חזה',
+        exercises: [
+          { name: 'לחיצת חזה בשכיבה', sets: 4, reps: '8-10', rest: 90, muscleGroup: 'חזה', desc: 'שכב על ספסל, אחוז במוט ברוחב כתפיים ולחץ למעלה. שמור על גב ישר.' },
+          { name: 'פשיטת חזה (פקדק)', sets: 3, reps: '12', rest: 60, muscleGroup: 'חזה', desc: 'שב על המכונה, אחוז בידיות ועצור בנקודת המקסימום. כווץ את החזה.' },
+          { name: 'שקיפה עם משקולות', sets: 3, reps: '12-15', rest: 60, muscleGroup: 'חזה', desc: 'שכב, פתח ידיים לצדדים עם כיפוף קל במרפק, הורד ועלה לאט.' },
+          { name: 'שכיבות סמיכה', sets: 3, reps: 'כישלון', rest: 60, muscleGroup: 'חזה', desc: 'ידיים ברוחב כתפיים, גוף ישר. ירד עד שחזה נוגע ברצפה.' },
+          { name: 'כיפוף טריצפס בכבל', sets: 3, reps: '12', rest: 60, muscleGroup: 'טריצפס', desc: 'עמוד ליד כבל, מרפקים צמודים לגוף, פשוט ידיים למטה.' },
+          { name: 'דיפ', sets: 3, reps: '10-12', rest: 60, muscleGroup: 'טריצפס', desc: 'אחוז בשתי ידיות, ירד עד זווית 90° ועלה. הישאר זקוף לטריצפס.' }
+        ]
+      },
+      {
+        name: 'גב + ביצפס',
+        muscle: 'גב',
+        exercises: [
+          { name: 'משיכת מוט (Deadlift)', sets: 4, reps: '5-6', rest: 120, muscleGroup: 'גב', desc: 'עמוד מול משקולת, כופף ברכיים, גב ישר. משוך למעלה עם הרגליים.' },
+          { name: 'חתירה עם מוט', sets: 4, reps: '8-10', rest: 90, muscleGroup: 'גב', desc: 'כופף קדימה 45°, משוך המוט לבטן. שמור על מרפקים קרובים לגוף.' },
+          { name: 'פולדאון לחזה', sets: 3, reps: '10-12', rest: 60, muscleGroup: 'גב', desc: 'שב מול מכונת כבל, משוך את הבר לחזה תוך כיפוף לאחור קל.' },
+          { name: 'חתירה בכבל', sets: 3, reps: '12', rest: 60, muscleGroup: 'גב', desc: 'שב על ספסל, משוך את הידית לבטן. שמור גב ישר.' },
+          { name: 'כיפוף ביצפס עם דאמבל', sets: 3, reps: '10-12', rest: 60, muscleGroup: 'ביצפס', desc: 'עמוד, מרפקים צמודים, כופף לסירוגין. סובב את כף היד בנקודה העליונה.' },
+          { name: 'כיפוף פטיש', sets: 3, reps: '12', rest: 60, muscleGroup: 'ביצפס', desc: 'כפות ידיים פנימה, כופף שתי ידיים יחד. מפעיל ביצפס + ברכיוראדיאליס.' }
+        ]
+      },
+      {
+        name: 'רגליים',
+        muscle: 'רגליים',
+        exercises: [
+          { name: 'סקוואט עם מוט', sets: 4, reps: '8-10', rest: 120, muscleGroup: 'ירכיים', desc: 'מוט על כתפיים, ירד עד שירכיים מקבילות לרצפה. ברכיים מעל אצבעות.' },
+          { name: 'לג פרס', sets: 4, reps: '12', rest: 90, muscleGroup: 'ירכיים', desc: 'שב על המכונה, רגליים ברוחב כתפיים. דחוף למעלה מבלי לנעול ברכיים.' },
+          { name: 'כיפוף רגליים', sets: 3, reps: '12-15', rest: 60, muscleGroup: 'ירך אחורי', desc: 'שכב על המכונה, כופף רגליים עד 90°. כווץ את הירך האחורי.' },
+          { name: 'פשיטת רגליים', sets: 3, reps: '15', rest: 60, muscleGroup: 'ארבע ראשי', desc: 'שב על המכונה, פשוט רגליים ישר. עצור שנייה בנקודה הגבוהה.' },
+          { name: 'קאלף ריז', sets: 4, reps: '20', rest: 45, muscleGroup: 'שוקיים', desc: 'עמוד על שפת מדרגה, עלה על הבוהנות. ירד לנמוך ועלה גבוה.' }
+        ]
+      },
+      {
+        name: 'כתפיים',
+        muscle: 'כתפיים',
+        exercises: [
+          { name: 'לחיצת כתפיים עם מוט', sets: 4, reps: '8-10', rest: 90, muscleGroup: 'כתפיים', desc: 'שב ישר, מוט בגובה הסנטר, לחץ למעלה ישר. אל תקמר גב.' },
+          { name: 'הרמה לצד', sets: 3, reps: '12-15', rest: 60, muscleGroup: 'כתף אמצעית', desc: 'ידיים לצדדים, הרם עד גובה כתפיים. אגודל קצת כלפי מטה.' },
+          { name: 'הרמה קדמית', sets: 3, reps: '12', rest: 60, muscleGroup: 'כתף קדמית', desc: 'הרם ידיים קדימה לסירוגין עד גובה כתפיים. מרפק ישר.' },
+          { name: 'ציפור (הרמה אחורית)', sets: 3, reps: '15', rest: 60, muscleGroup: 'כתף אחורית', desc: 'כופף קדימה, הרם ידיים לצדדים. מפעיל כתף אחורית.' },
+          { name: 'שרגים עם דאמבל', sets: 3, reps: '15', rest: 45, muscleGroup: 'טרפז', desc: 'עמוד עם דאמבל, הרם כתפיים למעלה ולמאחור. עצור רגע בעליון.' }
+        ]
+      },
+      {
+        name: 'ידיים + בטן',
+        muscle: 'ביצפס, טריצפס',
+        exercises: [
+          { name: 'פאדאון (Pushdown)', sets: 4, reps: '12', rest: 60, muscleGroup: 'טריצפס', desc: 'עמוד מול כבל עליון, מרפקים בצד, לחץ למטה עד פשיטה מלאה.' },
+          { name: 'כיפוף עם EZ Bar', sets: 4, reps: '10-12', rest: 60, muscleGroup: 'ביצפס', desc: 'אחוז ב-EZ bar, כופף לסנטר. מרפקים קבועים בצד הגוף.' },
+          { name: 'Skull Crusher', sets: 3, reps: '10', rest: 60, muscleGroup: 'טריצפס', desc: 'שכב, מוט מעל הגוף, כופף רק במרפקים להורדה לגובה המצח.' },
+          { name: 'כיפוף עם כבל', sets: 3, reps: '15', rest: 45, muscleGroup: 'ביצפס', desc: 'עמוד מול כבל תחתון, כופף בשתי ידיים. שמור מרפקים קבועים.' },
+          { name: 'קיפאופ', sets: 4, reps: '20', rest: 30, muscleGroup: 'בטן', desc: 'שכב על הגב, ברכיים כפופות, הרם כתפיים קדימה. נשום החוצה למעלה.' },
+          { name: 'פלאנק', sets: 3, reps: '45 שנ\'', rest: 45, muscleGroup: 'ליבה', desc: 'שמור גוף ישר כמו קרש. בטן מכווצת, אל תרים ישבן.' }
+        ]
+      }
+    ]
+  },
+  hiit: {
+    name: 'HIIT שורף שומן',
+    icon: '🔥',
+    desc: 'אינטרוולים עצימים שמדליקים חילוף חומרים ל-24 שעות אחרי האימון.',
+    tags: ['3 ימים', 'כל הרמות', 'ללא ציוד'],
+    color: '#ffd32a',
+    days: [
+      {
+        name: 'HIIT עליון',
+        muscle: 'עליון',
+        exercises: [
+          { name: 'בורפי', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'כל הגוף', desc: 'עמוד → כף יד ברצפה → קפוץ לשכיבת סמיכה → חזרה ← קפיצה עם ידיים למעלה.' },
+          { name: 'שכיבות סמיכה מהירות', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'חזה/טריצפס', desc: 'שכיבות סמיכה בקצב מהיר. שמור על טכניקה גם במהירות.' },
+          { name: 'מאנטיין ידיים', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'כתפיים', desc: 'מצב פלאנק, הרם יד אחת לחוד. גוף ישר בלי לנדנד.' },
+          { name: 'טאפ כתפיים בפלאנק', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'ליבה', desc: 'בפלאנק, הגע עם יד לכתף הנגדית. כסה טווח רחב.' },
+          { name: 'Mountain Climbers', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'בטן/כל הגוף', desc: 'מצב עקיצה, הרץ ברכיים לחזה בקצב. שמור על גוף ישר.' }
+        ]
+      },
+      {
+        name: 'HIIT תחתון',
+        muscle: 'תחתון',
+        exercises: [
+          { name: 'Jump Squat', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'ירכיים', desc: 'סקוואט מלא ואז קפוץ כמה שאפשר. נחת בעדינות וחזור.' },
+          { name: 'Lunge עם קפיצה', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'ירכיים/ישבן', desc: 'לנג, קפוץ החלף רגליים באוויר. נחת ברגל נגדית.' },
+          { name: 'Sumo Squat מהיר', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'ירכיים פנימיות', desc: 'רגליים רחבות, אצבעות הצד, סקוואטים מהירים עם נגיעה ברצפה.' },
+          { name: 'גלגל קאלף', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'שוקיים', desc: 'עמוד על בוהנות מהיר. קצב גבוה, עלייה מלאה.' },
+          { name: 'Box Kicks', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'כל הגוף', desc: 'בעיטות קדימה לסירוגין בגובה מותניים. ידיים כאגרוף מוגן.' }
+        ]
+      },
+      {
+        name: 'HIIT מלא',
+        muscle: 'כל הגוף',
+        exercises: [
+          { name: 'Tabata בורפי', sets: 8, reps: '20 שנ\'', rest: 10, muscleGroup: 'כל הגוף', desc: '20 שניות עבודה, 10 מנוחה × 8 = 4 דקות עצימות מקסימלית.' },
+          { name: 'Sprint במקום', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'קרדיו', desc: 'רוץ במקום בקצב ספרינט. ידיים פעילות כמו ריצה אמיתית.' },
+          { name: 'Jump Jack', sets: 4, reps: '45 שנ\'', rest: 15, muscleGroup: 'קרדיו', desc: 'קפיצות קלאסיות. רגליים ופרישת ידיים יחד.' },
+          { name: 'Bear Crawl', sets: 4, reps: '30 שנ\'', rest: 30, muscleGroup: 'ליבה/כתפיים', desc: 'זחל על ידיים ורגליים עם ברכיים נמוכות לרצפה. 4 צעדים קדימה + אחורה.' },
+          { name: 'קפיצה לגובה', sets: 4, reps: '10', rest: 30, muscleGroup: 'כל הגוף', desc: 'קפוץ כמה שאפשר גבוה. נחת בעדינות בסקוואט.' }
+        ]
+      }
+    ]
+  },
+  cardio: {
+    name: 'קרדיו וסיבולת',
+    icon: '🏃',
+    desc: 'תוכנית 3 ימים לחיזוק מערכת הלב, שריפת קלוריות ושיפור סיבולת.',
+    tags: ['3 ימים', 'מתחילים', 'ריצה + גוף'],
+    color: '#4f8ef7',
+    days: [
+      {
+        name: 'ריצה + ליבה',
+        muscle: 'קרדיו',
+        exercises: [
+          { name: 'ריצה קלה', sets: 1, reps: '15 דקות', rest: 0, muscleGroup: 'קרדיו', desc: 'ריצה בקצב שיחה — אתה אמור לדבר. שמור על קצב אחיד.' },
+          { name: 'Walk-Run אינטרוולים', sets: 5, reps: '1:1 דקה', rest: 0, muscleGroup: 'קרדיו', desc: 'דקה ריצה מהירה, דקה הליכה. חזור 5 פעמים.' },
+          { name: 'פלאנק', sets: 3, reps: '45 שנ\'', rest: 45, muscleGroup: 'ליבה', desc: 'גוף ישר, בטן מכווצת. נשום בשיטתיות.' },
+          { name: 'קיפאופ', sets: 3, reps: '20', rest: 30, muscleGroup: 'בטן', desc: 'ידיים מאחורי הראש, הרם רק את הכתפיים. לא את הגב.' },
+          { name: 'ריצה מגמר', sets: 1, reps: '5 דקות', rest: 0, muscleGroup: 'קרדיו', desc: 'סיים בריצה קלה להוריד דופק. לא להפסיק פתאום.' }
+        ]
+      },
+      {
+        name: 'אופניים + כוח',
+        muscle: 'כל הגוף',
+        exercises: [
+          { name: 'אופניים / Rowing', sets: 1, reps: '20 דקות', rest: 0, muscleGroup: 'קרדיו', desc: 'רמת קושי בינונית. עצימות שמאפשרת שיחה קצרה.' },
+          { name: 'סקוואט עם משקל גוף', sets: 4, reps: '20', rest: 30, muscleGroup: 'ירכיים', desc: 'סקוואטים מהירים. הורד עד 90° ועלה.' },
+          { name: 'שכיבות סמיכה', sets: 3, reps: '15', rest: 30, muscleGroup: 'חזה', desc: 'קצב רגיל. שמור על גוף ישר.' },
+          { name: 'Mountain Climbers', sets: 3, reps: '30 שנ\'', rest: 30, muscleGroup: 'ליבה', desc: 'קצב מהיר. שמור על גוף ישר.' },
+          { name: 'Stretching', sets: 1, reps: '5 דקות', rest: 0, muscleGroup: 'גמישות', desc: 'מתיחות סטטיות לכל קבוצות השרירים שעבדת.' }
+        ]
+      },
+      {
+        name: 'Tabata + ריצה',
+        muscle: 'קרדיו',
+        exercises: [
+          { name: 'Warm-up ריצה', sets: 1, reps: '10 דקות', rest: 0, muscleGroup: 'קרדיו', desc: 'ריצה קלה להכנת הגוף. העלאת דופק הדרגתית.' },
+          { name: 'Tabata Jump Squat', sets: 8, reps: '20 שנ\'', rest: 10, muscleGroup: 'ירכיים', desc: '20 שניות קפיצות, 10 מנוחה. × 8.' },
+          { name: 'Tabata בורפי', sets: 8, reps: '20 שנ\'', rest: 10, muscleGroup: 'כל הגוף', desc: '20 שניות בורפי, 10 מנוחה. × 8.' },
+          { name: 'ריצה מהירה', sets: 3, reps: '200 מטר', rest: 90, muscleGroup: 'קרדיו', desc: 'ספרינט 200 מטר בקצב מקסימלי. מנוחה מלאה בין.' },
+          { name: 'Cool Down', sets: 1, reps: '5 דקות', rest: 0, muscleGroup: 'גמישות', desc: 'הליכה והורדת דופק. מתיחות עיקריות.' }
+        ]
+      }
+    ]
+  }
+};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let state = {
+  user: { name: 'חבר', sound: true, vibrate: true },
+  selectedPlan: null,
+  log: [],
+  streak: 0,
+  bestStreak: 0
+};
+
+let workout = {
+  plan: null, dayIdx: 0, exIdx: 0, setIdx: 0,
+  startTime: null, timer: null
+};
+
+let restTimer = { interval: null, total: 60, remaining: 60 };
+
+// ═══════════════════════════════════════
+// STORAGE
+// ═══════════════════════════════════════
+function save() {
+  localStorage.setItem('ft_state', JSON.stringify(state));
+}
+function load() {
+  const s = localStorage.getItem('ft_state');
+  if (s) {
+    try { state = { ...state, ...JSON.parse(s) }; } catch(e) {}
+  }
+}
+
+// ═══════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════
+function finishOnboard() {
+  const name = document.getElementById('onboard-name').value.trim() || 'חבר';
+  state.user.name = name;
+  save();
+  document.getElementById('onboard').style.display = 'none';
+  renderHome();
+}
+
+document.getElementById('onboard-name').addEventListener('keydown', e => {
+  if (e.key === 'Enter') finishOnboard();
+});
+
+// ═══════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════
+function nav(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-screen="${screen}"]`).classList.add('active');
+
+  if (screen === 'home') renderHome();
+  if (screen === 'plans') renderPlans();
+  if (screen === 'progress') renderProgress();
+  if (screen === 'settings') renderSettings();
+}
+
+// ═══════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════
+function renderHome() {
+  document.getElementById('home-name').textContent = state.user.name;
+  document.getElementById('streak-num').textContent = state.streak;
+
+  const msgs = ['התחל היום!', 'כל יום חשוב!', 'לא תעצור עכשיו!', 'מכונה אתה!', 'אלוף! 🏆'];
+  document.getElementById('streak-msg').textContent = state.streak < msgs.length ? msgs[state.streak] : msgs[4];
+
+  // Today's workout
+  if (state.selectedPlan) {
+    const plan = PLANS[state.selectedPlan.plan];
+    const dayIdx = state.selectedPlan.dayIdx || 0;
+    const day = plan.days[dayIdx];
+    document.getElementById('today-plan-label').textContent = plan.name;
+    document.getElementById('today-day-name').textContent = day.name;
+    document.getElementById('today-day-desc').textContent = 'לחץ להתחלת האימון';
+    const totalSets = day.exercises.reduce((s, e) => s + e.sets, 0);
+    const dur = Math.round(totalSets * 1.5 + day.exercises.reduce((s, e) => s + e.sets * e.rest / 60, 0));
+    document.getElementById('today-dur').textContent = `~${dur} דקות`;
+    document.getElementById('today-excount').textContent = `${day.exercises.length} תרגילים`;
+    document.getElementById('today-sets').textContent = `${totalSets} סטים`;
+  }
+
+  // Stats
+  const weekAgo = Date.now() - 7 * 86400000;
+  const weekLog = state.log.filter(l => l.ts >= weekAgo);
+  document.getElementById('stat-total').textContent = state.log.length;
+  document.getElementById('stat-week').textContent = weekLog.length;
+  document.getElementById('stat-streak').textContent = state.bestStreak;
+  const totalMin = state.log.reduce((s, l) => s + (l.dur || 0), 0);
+  document.getElementById('stat-min').textContent = Math.round(totalMin);
+
+  // Muscles
+  const muscles = [...new Set(state.log.flatMap(l => l.muscles || []))].slice(0, 6);
+  const mr = document.getElementById('muscle-row');
+  mr.innerHTML = muscles.length
+    ? muscles.map(m => `<div class="muscle-chip">${m}</div>`).join('')
+    : '<div class="muscle-chip muted">עוד אין נתונים</div>';
+}
+
+function startTodayWorkout() {
+  if (!state.selectedPlan) { nav('plans'); return; }
+  const plan = PLANS[state.selectedPlan.plan];
+  const dayIdx = state.selectedPlan.dayIdx || 0;
+  startWorkout(state.selectedPlan.plan, dayIdx);
+}
+
+// ═══════════════════════════════════════
+// PLANS
+// ═══════════════════════════════════════
+function renderPlans() {
+  const container = document.getElementById('plan-cards');
+  container.innerHTML = Object.entries(PLANS).map(([key, plan]) => {
+    const sel = state.selectedPlan && state.selectedPlan.plan === key;
+    return `
+    <div class="plan-card ${sel ? 'selected' : ''}" onclick="selectPlan('${key}')">
+      <div class="plan-card-bg">${plan.icon}</div>
+      <div class="plan-header">
+        <div>
+          <div class="plan-icon">${plan.icon}</div>
+          <div class="plan-name">${plan.name}</div>
+        </div>
+        <div class="check-circle ${sel ? 'on' : ''}">${sel ? '✓' : ''}</div>
+      </div>
+      <div class="plan-desc">${plan.desc}</div>
+      <div class="plan-tags">${plan.tags.map(t => `<div class="plan-tag">${t}</div>`).join('')}</div>
+    </div>`;
+  }).join('');
+
+  if (state.selectedPlan) renderDays(state.selectedPlan.plan);
+}
+
+function selectPlan(key) {
+  state.selectedPlan = { plan: key, dayIdx: 0 };
+  save();
+  renderPlans();
+}
+
+function renderDays(planKey) {
+  const plan = PLANS[planKey];
+  const sec = document.getElementById('plan-days-section');
+  sec.classList.remove('hidden');
+  document.getElementById('plan-days-title').textContent = `ימי ${plan.name}`;
+  document.getElementById('plan-days-list').innerHTML = plan.days.map((d, i) => `
+    <div class="day-item" onclick="startWorkout('${planKey}', ${i})">
+      <div class="day-num">${i + 1}</div>
+      <div class="day-info">
+        <div class="day-name">${d.name}</div>
+        <div class="day-ex">${d.exercises.length} תרגילים · ${d.exercises.reduce((s,e)=>s+e.sets,0)} סטים</div>
+      </div>
+      <div class="day-arr">›</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+// WORKOUT
+// ═══════════════════════════════════════
+function startWorkout(planKey, dayIdx) {
+  workout.plan = planKey;
+  workout.dayIdx = dayIdx;
+  workout.exIdx = 0;
+  workout.setIdx = 0;
+  workout.startTime = Date.now();
+
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  nav_norender('workout');
+  renderWorkout();
+}
+
+function nav_norender(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-' + screen).classList.add('active');
+}
+
+function renderWorkout() {
+  const plan = PLANS[workout.plan];
+  const day = plan.days[workout.dayIdx];
+  const ex = day.exercises[workout.exIdx];
+  const totalEx = day.exercises.length;
+  const pct = (workout.exIdx / totalEx) * 100;
+
+  const dots = Array.from({ length: ex.sets }, (_, i) => {
+    const cls = i < workout.setIdx ? 'done' : i === workout.setIdx ? 'current' : '';
+    return `<div class="set-dot ${cls}">${i < workout.setIdx ? '✓' : i + 1}</div>`;
+  }).join('');
+
+  document.getElementById('workout-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-ghost btn-sm" style="width:auto" onclick="quitWorkout()">✕ יציאה</button>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--muted)">${day.name}</div>
+        <div style="font-size:13px;font-weight:700">${workout.exIdx + 1} מתוך ${totalEx}</div>
+      </div>
+      <div id="workout-clock" style="font-size:13px;font-weight:700;color:var(--accent)">00:00</div>
+    </div>
+
+    <div class="workout-progress-bar">
+      <div class="workout-progress-fill" style="width:${pct}%"></div>
+    </div>
+
+    <div class="exercise-card">
+      <div class="ex-muscle">${ex.muscleGroup}</div>
+      <div class="ex-name">${ex.name}</div>
+      <div class="ex-desc">${ex.desc}</div>
+      <div class="ex-big">
+        <div class="ex-stat">
+          <div class="ex-stat-num">${ex.sets}</div>
+          <div class="ex-stat-label">סטים</div>
+        </div>
+        <div class="ex-stat">
+          <div class="ex-stat-num" style="font-size:28px">${ex.reps}</div>
+          <div class="ex-stat-label">חזרות</div>
+        </div>
+        <div class="ex-stat">
+          <div class="ex-stat-num" style="font-size:28px">${ex.rest}s</div>
+          <div class="ex-stat-label">מנוחה</div>
+        </div>
+      </div>
+      <div class="sets-track">${dots}</div>
+      <div style="font-size:13px;color:var(--muted)">סט ${workout.setIdx + 1} מתוך ${ex.sets}</div>
+    </div>
+
+    <div class="workout-actions">
+      <button class="btn btn-done" onclick="completeSet()">✓ סט הושלם!</button>
+      <button class="btn btn-secondary" onclick="skipExercise()">דלג על תרגיל ›</button>
+    </div>`;
+
+  startClock();
+}
+
+function startClock() {
+  if (workout.timer) clearInterval(workout.timer);
+  workout.timer = setInterval(() => {
+    const el = document.getElementById('workout-clock');
+    if (!el) { clearInterval(workout.timer); return; }
+    const sec = Math.floor((Date.now() - workout.startTime) / 1000);
+    const m = String(Math.floor(sec / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    el.textContent = `${m}:${s}`;
+  }, 1000);
+}
+
+function completeSet() {
+  vibrate([30]);
+  const plan = PLANS[workout.plan];
+  const day = plan.days[workout.dayIdx];
+  const ex = day.exercises[workout.exIdx];
+
+  workout.setIdx++;
+
+  if (workout.setIdx >= ex.sets) {
+    // Move to next exercise
+    workout.exIdx++;
+    workout.setIdx = 0;
+
+    if (workout.exIdx >= day.exercises.length) {
+      finishWorkout();
+      return;
+    }
+
+    if (ex.rest > 0) {
+      openRest(ex.rest, () => renderWorkout());
+    } else {
+      renderWorkout();
+    }
+  } else {
+    // Same exercise, next set
+    if (ex.rest > 0) {
+      openRest(ex.rest, () => renderWorkout());
+    } else {
+      renderWorkout();
+    }
+  }
+}
+
+function skipExercise() {
+  const plan = PLANS[workout.plan];
+  const day = plan.days[workout.dayIdx];
+  workout.exIdx++;
+  workout.setIdx = 0;
+  if (workout.exIdx >= day.exercises.length) {
+    finishWorkout();
+  } else {
+    renderWorkout();
+  }
+}
+
+function quitWorkout() {
+  if (workout.timer) clearInterval(workout.timer);
+  closeRest();
+  nav('home');
+}
+
+function finishWorkout() {
+  if (workout.timer) clearInterval(workout.timer);
+  closeRest();
+
+  const plan = PLANS[workout.plan];
+  const day = plan.days[workout.dayIdx];
+  const dur = Math.round((Date.now() - workout.startTime) / 60000);
+  const muscles = [...new Set(day.exercises.map(e => e.muscleGroup))];
+  const totalSets = day.exercises.reduce((s, e) => s + e.sets, 0);
+
+  const entry = {
+    ts: Date.now(),
+    plan: plan.name,
+    day: day.name,
+    dur,
+    muscles,
+    sets: totalSets
+  };
+  state.log.unshift(entry);
+
+  // Update streak
+  const today = new Date().toDateString();
+  const lastDate = state.lastWorkoutDate;
+  if (lastDate === today) {
+    // same day, no streak change
+  } else {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (lastDate === yesterday) {
+      state.streak++;
+    } else {
+      state.streak = 1;
+    }
+  }
+  state.lastWorkoutDate = today;
+  if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+
+  // Advance plan day
+  if (state.selectedPlan && state.selectedPlan.plan === workout.plan) {
+    const nextDay = (workout.dayIdx + 1) % plan.days.length;
+    state.selectedPlan.dayIdx = nextDay;
+  }
+
+  save();
+  showComplete(dur, totalSets, muscles.length, day.name);
+}
+
+function showComplete(dur, sets, muscleCount, dayName) {
+  document.getElementById('workout-body').innerHTML = `
+    <div class="complete-screen">
+      <div class="complete-emoji">🏆</div>
+      <div class="complete-title">אימון הושלם!</div>
+      <div class="complete-sub">${dayName}</div>
+      <div class="complete-stats">
+        <div class="complete-stat">
+          <div class="complete-stat-num">${dur}</div>
+          <div class="complete-stat-label">דקות</div>
+        </div>
+        <div class="complete-stat">
+          <div class="complete-stat-num">${sets}</div>
+          <div class="complete-stat-label">סטים</div>
+        </div>
+        <div class="complete-stat">
+          <div class="complete-stat-num">${state.streak}</div>
+          <div class="complete-stat-label">רצף ימים</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="nav('home')" style="margin-bottom:12px">
+        🏠 חזרה לבית
+      </button>
+      <button class="btn btn-secondary" onclick="nav('progress')">
+        📈 ראה התקדמות
+      </button>
+    </div>`;
+  vibrate([50, 30, 50, 30, 100]);
+}
+
+// ═══════════════════════════════════════
+// REST TIMER
+// ═══════════════════════════════════════
+const CIRCUMFERENCE = 2 * Math.PI * 88; // ≈553
+
+function openRest(seconds, callback) {
+  restTimer.total = seconds;
+  restTimer.remaining = seconds;
+  restTimer.callback = callback;
+
+  // mark active preset
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  const preset = document.querySelector(`.preset-btn[onclick="setRestTime(${seconds})"]`);
+  if (preset) preset.classList.add('active');
+
+  document.getElementById('rest-modal').classList.add('show');
+  tickRest();
+  restTimer.interval = setInterval(tickRest, 1000);
+}
+
+function tickRest() {
+  const el = document.getElementById('timer-num');
+  const fill = document.getElementById('timer-fill');
+  if (!el) return;
+
+  el.textContent = restTimer.remaining;
+  const pct = restTimer.remaining / restTimer.total;
+  fill.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+
+  if (restTimer.remaining <= 0) {
+    clearInterval(restTimer.interval);
+    if (state.user.sound) playBeep();
+    vibrate([40, 20, 40]);
+    setTimeout(() => {
+      closeRest();
+      if (restTimer.callback) restTimer.callback();
+    }, 600);
+  }
+  restTimer.remaining--;
+}
+
+function setRestTime(sec) {
+  clearInterval(restTimer.interval);
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  restTimer.total = sec;
+  restTimer.remaining = sec;
+  tickRest();
+  restTimer.interval = setInterval(tickRest, 1000);
+}
+
+function skipRest() {
+  clearInterval(restTimer.interval);
+  const cb = restTimer.callback;
+  closeRest();
+  if (cb) cb();
+}
+
+function closeRest() {
+  clearInterval(restTimer.interval);
+  document.getElementById('rest-modal').classList.remove('show');
+}
+
+function playBeep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.15, 0.3].forEach(t => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.3, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.1);
+      o.start(ctx.currentTime + t);
+      o.stop(ctx.currentTime + t + 0.1);
+    });
+  } catch(e) {}
+}
+
+function vibrate(pattern) {
+  if (state.user.vibrate && navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// ═══════════════════════════════════════
+// PROGRESS
+// ═══════════════════════════════════════
+function renderProgress() {
+  document.getElementById('prog-streak').textContent = state.streak;
+
+  // Week grid
+  const days = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+  const now = new Date();
+  const todayStr = now.toDateString();
+  let grid = '';
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now - i * 86400000);
+    const dStr = d.toDateString();
+    const worked = state.log.some(l => new Date(l.ts).toDateString() === dStr);
+    const isToday = dStr === todayStr;
+    const barH = worked ? 48 : 8;
+    const cls = isToday ? 'today' : worked ? 'done' : '';
+    const dayLabel = days[d.getDay()];
+    grid += `<div class="week-day">
+      <div class="week-label">${dayLabel}</div>
+      <div class="week-bar-wrap">
+        <div class="week-bar ${cls}" style="height:${barH}px"></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('week-grid').innerHTML = grid;
+
+  // Log
+  const logEl = document.getElementById('log-list');
+  if (state.log.length === 0) {
+    logEl.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>עדיין אין אימונים<br>קדימה להתחיל!</div>`;
+    return;
+  }
+  logEl.innerHTML = state.log.slice(0, 20).map(l => {
+    const d = new Date(l.ts);
+    const dateStr = d.toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'short' });
+    return `<div class="log-item">
+      <div class="log-dot"></div>
+      <div class="log-info">
+        <div class="log-name">${l.day || l.plan}</div>
+        <div class="log-date">${dateStr} · ${l.sets || '?'} סטים</div>
+      </div>
+      <div class="log-dur">${l.dur || 0} דק\'</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════
+function renderSettings() {
+  document.getElementById('set-name-display').textContent = state.user.name;
+  document.getElementById('set-name-input').value = state.user.name;
+  document.getElementById('toggle-sound').classList.toggle('on', state.user.sound);
+  document.getElementById('toggle-vibrate').classList.toggle('on', state.user.vibrate);
+}
+
+function saveName(val) {
+  state.user.name = val.trim() || 'חבר';
+  document.getElementById('set-name-display').textContent = state.user.name;
+  save();
+}
+
+function toggleSound() {
+  state.user.sound = !state.user.sound;
+  document.getElementById('toggle-sound').classList.toggle('on', state.user.sound);
+  save();
+}
+
+function toggleVibrate() {
+  state.user.vibrate = !state.user.vibrate;
+  document.getElementById('toggle-vibrate').classList.toggle('on', state.user.vibrate);
+  save();
+}
+
+function resetProgress() {
+  if (!confirm('למחוק את כל ההתקדמות? לא ניתן לבטל.')) return;
+  state.log = [];
+  state.streak = 0;
+  state.bestStreak = 0;
+  state.lastWorkoutDate = null;
+  save();
+  renderSettings();
+  alert('ההתקדמות אופסה.');
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+load();
+if (state.user.name && state.user.name !== 'חבר') {
+  document.getElementById('onboard').style.display = 'none';
+}
+renderHome();
+renderPlans();
+</script>
+</body>
+</html>
