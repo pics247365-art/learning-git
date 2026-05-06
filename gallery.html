@@ -100,7 +100,6 @@
       max-height: 90vh;
       object-fit: contain;
       display: block;
-      filter: grayscale(0%);
       border-radius: 2px;
       animation: zoomIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -110,49 +109,37 @@
       to   { transform: scale(1);    opacity: 1; }
     }
 
-    .lightbox-close {
+    .lightbox-btn {
       position: fixed;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 1001;
+    }
+
+    .lightbox-btn:hover { background: rgba(255,255,255,0.22); }
+
+    .lightbox-close {
       top: 20px;
       left: 20px;
       width: 42px;
       height: 42px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 50%;
-      color: #fff;
-      font-size: 1.3rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      z-index: 1001;
-    }
-
-    .lightbox-close:hover {
-      background: rgba(255,255,255,0.22);
     }
 
     .lightbox-nav {
-      position: fixed;
       top: 50%;
       transform: translateY(-50%);
       width: 44px;
       height: 44px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-radius: 50%;
-      color: #fff;
-      font-size: 1.3rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s;
-      z-index: 1001;
     }
 
-    .lightbox-nav:hover { background: rgba(255,255,255,0.22); }
     .lightbox-prev { right: 20px; }
     .lightbox-next { left: 20px; }
 
@@ -167,7 +154,6 @@
       z-index: 1001;
     }
 
-    /* Mobile */
     @media (max-width: 600px) {
       .gallery { gap: 4px; }
     }
@@ -185,66 +171,46 @@
 </header>
 
 <div class="gallery" id="gallery">
-  <!--
-    להחלפת תמונות: החלף את ה-src בכל <img> בנתיב לתמונה שלך.
-    לדוגמה: src="photos/photo1.jpg"
-    שמור על אותו מבנה של data-index.
-  -->
-  <div class="gallery-item" data-index="0">
-    <img src="photo1.webp" alt="ציור אשה">
-  </div>
-  <div class="gallery-item" data-index="1">
-    <img src="photo2.webp" alt="שלושה גברים">
-  </div>
-  <div class="gallery-item" data-index="2">
-    <img src="photo3.png" alt="פורטרט טבע">
-  </div>
-  <div class="gallery-item" data-index="3">
-    <img src="photo4.png" alt="פרחים צבעוניים">
-  </div>
-  <div class="gallery-item" data-index="4">
-    <img src="photo5.png" alt="מוח דיגיטלי">
-  </div>
-  <div class="gallery-item" data-index="5">
-    <img src="photo6.png" alt="מראה גותי">
-  </div>
-  <div class="gallery-item" data-index="6">
-    <img src="photo7.png" alt="מראה שבור">
-  </div>
-  <div class="gallery-item" data-index="7">
-    <img src="photo8.png" alt="ראש ים">
-  </div>
-  <div class="gallery-item" data-index="8">
-    <img src="photo9.png" alt="פיסול ופרח">
-  </div>
+  <div class="gallery-item"><img src="photo1.webp" alt="ציור אשה"></div>
+  <div class="gallery-item"><img src="photo2.webp" alt="שלושה גברים"></div>
+  <div class="gallery-item"><img src="photo3.png"  alt="פורטרט טבע"></div>
+  <div class="gallery-item"><img src="photo4.png"  alt="פרחים צבעוניים" loading="lazy"></div>
+  <div class="gallery-item"><img src="photo5.png"  alt="מוח דיגיטלי"    loading="lazy"></div>
+  <div class="gallery-item"><img src="photo6.png"  alt="מראה גותי"       loading="lazy"></div>
+  <div class="gallery-item"><img src="photo7.png"  alt="מראה שבור"       loading="lazy"></div>
+  <div class="gallery-item"><img src="photo8.png"  alt="ראש ים"          loading="lazy"></div>
+  <div class="gallery-item"><img src="photo9.png"  alt="פיסול ופרח"      loading="lazy"></div>
 </div>
 
 <!-- Lightbox -->
 <div class="lightbox" id="lightbox">
-  <button class="lightbox-close" id="lbClose" aria-label="סגור">✕</button>
-  <button class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="הקודם">&#8250;</button>
+  <button class="lightbox-btn lightbox-close" id="lbClose" aria-label="סגור">✕</button>
+  <button class="lightbox-btn lightbox-nav lightbox-prev" id="lbPrev" aria-label="הקודם">&#8250;</button>
   <div class="lightbox-inner">
     <img id="lbImg" src="" alt="">
   </div>
-  <button class="lightbox-nav lightbox-next" id="lbNext" aria-label="הבא">&#8249;</button>
+  <button class="lightbox-btn lightbox-nav lightbox-next" id="lbNext" aria-label="הבא">&#8249;</button>
   <div class="lightbox-counter" id="lbCounter"></div>
 </div>
 
 <script>
   const items   = Array.from(document.querySelectorAll('.gallery-item'));
+  const srcs    = items.map(el => el.querySelector('img').src);
+  const alts    = items.map(el => el.querySelector('img').alt);
   const lb      = document.getElementById('lightbox');
   const lbImg   = document.getElementById('lbImg');
   const lbCount = document.getElementById('lbCounter');
   let current   = 0;
 
-  function getSrc(index) {
-    return items[index].querySelector('img').src;
+  function updateUI() {
+    lbImg.src = srcs[current];
+    lbImg.alt = alts[current];
+    lbCount.textContent = (current + 1) + ' / ' + items.length;
   }
 
   function openLightbox(index) {
     current = index;
-    lbImg.src = getSrc(current);
-    lbCount.textContent = (current + 1) + ' / ' + items.length;
+    updateUI();
     lb.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -257,11 +223,11 @@
 
   function navigate(dir) {
     current = (current + dir + items.length) % items.length;
+    lbImg.src = srcs[current];
     lbImg.style.animation = 'none';
-    lbImg.offsetHeight; // reflow
+    void lbImg.offsetHeight; // restart CSS animation
     lbImg.style.animation = '';
-    lbImg.src = getSrc(current);
-    lbCount.textContent = (current + 1) + ' / ' + items.length;
+    updateUI();
   }
 
   items.forEach((item, i) => item.addEventListener('click', () => openLightbox(i)));
@@ -279,13 +245,12 @@
     if (e.key === 'ArrowLeft')  navigate(+1);
   });
 
-  // Swipe support (mobile)
   let touchStartX = 0;
-  lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
   lb.addEventListener('touchend',   e => {
     const dx = e.changedTouches[0].clientX - touchStartX;
     if (Math.abs(dx) > 50) navigate(dx > 0 ? -1 : 1);
-  });
+  }, { passive: true });
 </script>
 
 </body>
