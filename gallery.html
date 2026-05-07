@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>גלריה | אילן לוי צלם</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0e0e0e;
+      color: #e8e0d5;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      min-height: 100vh;
+      direction: rtl;
+    }
+
+    header {
+      text-align: center;
+      padding: 52px 24px 36px;
+      letter-spacing: 0.04em;
+    }
+
+    header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+      font-weight: 300;
+      color: #f0ebe3;
+    }
+
+    header p {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      color: #7a7068;
+      letter-spacing: 0.08em;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 4/3;
+      background: #1a1a1a;
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: grayscale(100%);
+      transition: transform 0.4s ease, filter 0.4s ease;
+    }
+
+    .gallery-item:hover img {
+      filter: grayscale(60%);
+      transform: scale(1.04);
+    }
+
+    /* Lightbox */
+    .lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.94);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .lightbox.open {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .lightbox-inner {
+      position: relative;
+      max-width: min(90vw, 900px);
+      max-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .lightbox-inner img {
+      max-width: 100%;
+      max-height: 90vh;
+      object-fit: contain;
+      display: block;
+      filter: grayscale(0%);
+      border-radius: 2px;
+      animation: zoomIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.88); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 42px;
+      height: 42px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 1001;
+    }
+
+    .lightbox-close:hover {
+      background: rgba(255,255,255,0.22);
+    }
+
+    .lightbox-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 50%;
+      color: #fff;
+      font-size: 1.3rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      z-index: 1001;
+    }
+
+    .lightbox-nav:hover { background: rgba(255,255,255,0.22); }
+    .lightbox-prev { right: 20px; }
+    .lightbox-next { left: 20px; }
+
+    .lightbox-counter {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.1em;
+      z-index: 1001;
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .gallery { gap: 4px; }
+    }
+
+    @media (max-width: 400px) {
+      .gallery { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>אילן לוי | צלם</h1>
+  <p>לחץ על תמונה לצפייה בצבע</p>
+</header>
+
+<div class="gallery" id="gallery">
+  <!--
+    להחלפת תמונות: החלף את ה-src בכל <img> בנתיב לתמונה שלך.
+    לדוגמה: src="photos/photo1.jpg"
+    שמור על אותו מבנה של data-index.
+  -->
+  <div class="gallery-item" data-index="0">
+    <img src="photo1.webp" alt="ציור אשה">
+  </div>
+  <div class="gallery-item" data-index="1">
+    <img src="photo2.webp" alt="שלושה גברים">
+  </div>
+  <div class="gallery-item" data-index="2">
+    <img src="photo3.png" alt="פורטרט טבע">
+  </div>
+  <div class="gallery-item" data-index="3">
+    <img src="photo4.png" alt="פרחים צבעוניים">
+  </div>
+  <div class="gallery-item" data-index="4">
+    <img src="photo5.png" alt="מוח דיגיטלי">
+  </div>
+  <div class="gallery-item" data-index="5">
+    <img src="photo6.png" alt="מראה גותי">
+  </div>
+  <div class="gallery-item" data-index="6">
+    <img src="photo7.png" alt="מראה שבור">
+  </div>
+  <div class="gallery-item" data-index="7">
+    <img src="photo8.png" alt="ראש ים">
+  </div>
+  <div class="gallery-item" data-index="8">
+    <img src="photo9.png" alt="פיסול ופרח">
+  </div>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lbClose" aria-label="סגור">✕</button>
+  <button class="lightbox-nav lightbox-prev" id="lbPrev" aria-label="הקודם">&#8250;</button>
+  <div class="lightbox-inner">
+    <img id="lbImg" src="" alt="">
+  </div>
+  <button class="lightbox-nav lightbox-next" id="lbNext" aria-label="הבא">&#8249;</button>
+  <div class="lightbox-counter" id="lbCounter"></div>
+</div>
+
+<script>
+  const items   = Array.from(document.querySelectorAll('.gallery-item'));
+  const lb      = document.getElementById('lightbox');
+  const lbImg   = document.getElementById('lbImg');
+  const lbCount = document.getElementById('lbCounter');
+  let current   = 0;
+
+  function getSrc(index) {
+    return items[index].querySelector('img').src;
+  }
+
+  function openLightbox(index) {
+    current = index;
+    lbImg.src = getSrc(current);
+    lbCount.textContent = (current + 1) + ' / ' + items.length;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+    lbImg.src = '';
+  }
+
+  function navigate(dir) {
+    current = (current + dir + items.length) % items.length;
+    lbImg.style.animation = 'none';
+    lbImg.offsetHeight; // reflow
+    lbImg.style.animation = '';
+    lbImg.src = getSrc(current);
+    lbCount.textContent = (current + 1) + ' / ' + items.length;
+  }
+
+  items.forEach((item, i) => item.addEventListener('click', () => openLightbox(i)));
+
+  document.getElementById('lbClose').addEventListener('click', closeLightbox);
+  document.getElementById('lbPrev').addEventListener('click', () => navigate(-1));
+  document.getElementById('lbNext').addEventListener('click', () => navigate(+1));
+
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')     closeLightbox();
+    if (e.key === 'ArrowRight') navigate(-1);
+    if (e.key === 'ArrowLeft')  navigate(+1);
+  });
+
+  // Swipe support (mobile)
+  let touchStartX = 0;
+  lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  lb.addEventListener('touchend',   e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 50) navigate(dx > 0 ? -1 : 1);
+  });
+</script>
+
+</body>
+</html>
