@@ -1,45 +1,25 @@
 @media (max-width: 768px) {
-    .nav-menu {
-        display: none;
-    }
+    .nav-links { display: none; }
 
-    .hero {
+    .hero-title { font-size: clamp(4rem, 20vw, 6rem); }
+
+    .pillars-grid { grid-template-columns: 1fr 1fr; }
+
+    .book-card {
         flex-direction: column;
         text-align: center;
-    }
-
-    .hero-title {
-        font-size: 2.5rem;
-    }
-
-    .hero-buttons {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .features-grid {
-        grid-template-columns: 1fr;
         gap: 2rem;
     }
 
-    .main-quote {
-        font-size: 1.5rem;
-        padding: 0 2rem;
-    }
+    .form-row { grid-template-columns: 1fr; }
+
+    .quote-mark { display: none; }
 }
 
 @media (max-width: 480px) {
-    .hero-title {
-        font-size: 2rem;
-    }
+    .pillars-grid { grid-template-columns: 1fr; }
 
-    .nav-buttons {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
+    .nav-cta { display: none; }
 
-    .btn-primary, .btn-secondary {
-        padding: 0.6rem 1rem;
-        font-size: 0.9rem;
-    }
+    .hero-actions { flex-direction: column; align-items: center; }
 }
