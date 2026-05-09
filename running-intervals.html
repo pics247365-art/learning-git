@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ריצת אינטרוולים</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f14;
+      --surface: #161922;
+      --surface2: #1e2230;
+      --border: #272c3d;
+      --text: #eef0ff;
+      --muted: #6b7090;
+      --run: #00e676;
+      --run-d: #00a854;
+      --walk: #40c4ff;
+      --walk-d: #0086b3;
+      --rest: #ff9100;
+      --rest-d: #b36600;
+      --warmup: #d280ff;
+      --warmup-d: #8b2fc9;
+      --danger: #ff4444;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 20px 14px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header .logo { font-size: 26px; }
+    header h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; }
+    header h1 em { font-style: normal; color: var(--run); }
+    header small {
+      margin-right: auto;
+      font-size: 11px;
+      color: var(--muted);
+      background: var(--surface2);
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    /* ── Screens ── */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* ── Setup screen ── */
+    #setupScreen { padding: 16px 16px 40px; }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 9px;
+    }
+
+    /* Presets */
+    .presets-row {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+      margin-bottom: 22px;
+    }
+    .presets-row::-webkit-scrollbar { display: none; }
+    .preset-chip {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .preset-chip:hover, .preset-chip.sel {
+      border-color: var(--run);
+      color: var(--run);
+      background: rgba(0,230,118,0.07);
+    }
+
+    /* Rounds */
+    .rounds-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+    }
+    .rounds-label { font-size: 15px; font-weight: 600; }
+    .rounds-ctrl { display: flex; align-items: center; gap: 14px; }
+    .rnd-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+      line-height: 1;
+    }
+    .rnd-btn:hover { background: var(--border); }
+    .rounds-num { font-size: 24px; font-weight: 800; min-width: 28px; text-align: center; }
+
+    /* Interval cards */
+    .intervals-list { display: flex; flex-direction: column; gap: 9px; margin-bottom: 12px; }
+    .iv-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      position: relative;
+      overflow: hidden;
+    }
+    .iv-card::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: var(--iv-color, var(--muted));
+      border-radius: 0 13px 13px 0;
+    }
+    .iv-num {
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      flex-shrink: 0;
+    }
+    .iv-type {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 7px 10px;
+      flex: 1;
+      cursor: pointer;
+      appearance: auto;
+    }
+    .iv-dur { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+    .dur-inp {
+      width: 42px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 17px; font-weight: 700;
+      text-align: center;
+      padding: 5px 2px;
+    }
+    .dur-inp:focus { outline: 1px solid var(--run); border-color: var(--run); }
+    .dur-sep { font-size: 17px; font-weight: 700; color: var(--muted); }
+    .del-btn {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 19px; line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: color 0.12s, background 0.12s;
+    }
+    .del-btn:hover { color: var(--danger); background: rgba(255,68,68,.12); }
+
+    .add-btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 13px;
+      border: 1.5px dashed var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 15px;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      margin-bottom: 22px;
+    }
+    .add-btn:hover { color: var(--text); border-color: var(--run); }
+
+    /* Summary chips */
+    .summary-row { display: flex; gap: 9px; margin-bottom: 22px; }
+    .sum-chip {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 8px;
+      text-align: center;
+    }
+    .sum-chip .v { font-size: 22px; font-weight: 800; }
+    .sum-chip .l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* Start button */
+    .start-btn {
+      width: 100%;
+      padding: 18px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, var(--run), var(--run-d));
+      color: #02140a;
+      font-size: 18px; font-weight: 900;
+      cursor: pointer;
+      letter-spacing: -0.2px;
+      box-shadow: 0 4px 24px rgba(0,230,118,.28);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .start-btn:hover { opacity: .9; transform: translateY(-1px); }
+    .start-btn:active { transform: translateY(0); }
+
+    /* ── Workout screen ── */
+    #workoutScreen {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .wk-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+    }
+    .stop-btn {
+      background: rgba(255,68,68,.12);
+      border: 1px solid rgba(255,68,68,.25);
+      color: var(--danger);
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .stop-btn:hover { background: rgba(255,68,68,.2); }
+    .wk-info { font-size: 12px; color: var(--muted); }
+
+    /* Overall progress bar */
+    .progress-track { height: 3px; background: var(--surface2); }
+    .progress-fill {
+      height: 100%;
+      background: var(--run);
+      transition: width 1s linear, background 0.5s;
+    }
+
+    /* Main workout area */
+    .wk-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 20px 32px;
+      gap: 18px;
+    }
+
+    .cur-label {
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      transition: color 0.4s;
+    }
+    .cur-label.paused { opacity: 0.5; }
+
+    /* Ring timer */
+    .ring-wrap {
+      position: relative;
+      width: 230px; height: 230px;
+    }
+    .ring-svg {
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .ring-bg { fill: none; stroke: var(--surface2); stroke-width: 13; }
+    .ring-arc {
+      fill: none;
+      stroke: var(--run);
+      stroke-width: 13;
+      stroke-linecap: round;
+      stroke-dasharray: 626.6;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear, stroke 0.5s;
+    }
+    .ring-center {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 3px;
+    }
+    .ring-time {
+      font-size: 54px; font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -2px; line-height: 1;
+      transition: color 0.4s;
+    }
+    .ring-time.countdown { animation: pulse 0.4s ease; }
+    @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+    .ring-sub { font-size: 12px; color: var(--muted); }
+
+    /* Round dots */
+    .round-dots { display: flex; gap: 7px; align-items: center; }
+    .rdot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      transition: all 0.3s;
+    }
+    .rdot.done { background: var(--muted); border-color: var(--muted); }
+    .rdot.active { background: var(--run); border-color: var(--run); box-shadow: 0 0 6px var(--run); }
+
+    /* Next interval */
+    .next-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 22px;
+      text-align: center;
+    }
+    .next-lbl { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+    .next-name { font-size: 15px; font-weight: 700; }
+
+    /* Pause button */
+    .pause-btn {
+      width: 68px; height: 68px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 26px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .pause-btn:hover { background: var(--surface2); border-color: var(--run); }
+    .pause-btn.paused { border-color: var(--run); color: var(--run); }
+
+    /* ── Done overlay ── */
+    .done-overlay {
+      position: fixed; inset: 0;
+      background: rgba(13, 15, 20, 0.97);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 22px;
+      padding: 40px 30px;
+      z-index: 100;
+      animation: fadeIn 0.4s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+    .done-medal { font-size: 68px; animation: bounce 0.6s 0.2s both; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-16px)} 70%{transform:translateY(-6px)} }
+    .done-title { font-size: 34px; font-weight: 900; }
+    .done-stats { display: flex; gap: 28px; }
+    .done-stat { text-align: center; }
+    .done-stat .v { font-size: 30px; font-weight: 800; color: var(--run); }
+    .done-stat .l { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .done-again {
+      padding: 16px 44px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, var(--run), var(--run-d));
+      color: #02140a;
+      font-size: 17px; font-weight: 900;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .done-again:hover { opacity: .88; }
+    .done-home {
+      background: none; border: none;
+      color: var(--muted); font-size: 14px;
+      cursor: pointer; text-decoration: underline;
+    }
+
+    /* ── Paused banner ── */
+    .paused-banner {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,.7);
+      color: var(--text);
+      font-size: 20px; font-weight: 800;
+      padding: 10px 28px;
+      border-radius: 30px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .ring-wrap.paused .paused-banner { opacity: 1; }
+    .ring-wrap.paused .ring-arc { opacity: 0.4; }
+    .ring-wrap.paused .ring-time { opacity: 0.4; }
+
+    @media (max-width: 360px) {
+      .ring-wrap { width: 200px; height: 200px; }
+      .ring-time { font-size: 44px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">🏃</span>
+  <h1>ריצת <em>אינטרוולים</em></h1>
+  <small>שלח לחבר ✉</small>
+</header>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div id="setupScreen" class="screen active">
+  <div id="setupContent">
+
+    <div class="section-label" style="margin-top:16px">תוכניות מוכנות</div>
+    <div class="presets-row" id="presetsRow">
+      <button class="preset-chip" data-preset="c25k"     onclick="loadPreset(this)">🌱 מתחילים</button>
+      <button class="preset-chip" data-preset="hiit2010" onclick="loadPreset(this)">⚡ HIIT 20/10</button>
+      <button class="preset-chip" data-preset="tabata"   onclick="loadPreset(this)">🔥 טאבאטה</button>
+      <button class="preset-chip" data-preset="pyramid"  onclick="loadPreset(this)">📐 פירמידה</button>
+      <button class="preset-chip" data-preset="warmup"   onclick="loadPreset(this)">🏃 חימום + ריצה</button>
+      <button class="preset-chip" data-preset="empty"    onclick="loadPreset(this)">✏️ ריק</button>
+    </div>
+
+    <div class="section-label">סיבובים (מספר חזרות על כל האינטרוולים)</div>
+    <div class="rounds-card">
+      <span class="rounds-label">חזור על הרצף</span>
+      <div class="rounds-ctrl">
+        <button class="rnd-btn" onclick="changeRounds(-1)">−</button>
+        <span class="rounds-num" id="roundsNum">1</span>
+        <button class="rnd-btn" onclick="changeRounds(+1)">+</button>
+      </div>
+    </div>
+
+    <div class="section-label">שלבי האימון</div>
+    <div class="intervals-list" id="ivList"></div>
+    <button class="add-btn" onclick="addInterval()">＋ הוסף שלב</button>
+
+    <div class="section-label">סיכום</div>
+    <div class="summary-row">
+      <div class="sum-chip"><div class="v" id="sumSteps">0</div><div class="l">שלבים</div></div>
+      <div class="sum-chip"><div class="v" id="sumTotal">0:00</div><div class="l">זמן כולל</div></div>
+      <div class="sum-chip"><div class="v" id="sumRounds">1</div><div class="l">סיבובים</div></div>
+    </div>
+
+    <button class="start-btn" onclick="startWorkout()">▶ התחל אימון</button>
+  </div>
+</div>
+
+<!-- ══ WORKOUT SCREEN ══ -->
+<div id="workoutScreen" class="screen">
+  <div class="wk-top">
+    <button class="stop-btn" onclick="stopWorkout()">✕ עצור</button>
+    <div class="wk-info" id="wkInfo">סיבוב 1 מתוך 1</div>
+  </div>
+
+  <div class="progress-track">
+    <div class="progress-fill" id="progFill" style="width:0%"></div>
+  </div>
+
+  <div class="wk-main">
+    <div class="cur-label" id="curLabel">ריצה</div>
+
+    <div class="ring-wrap" id="ringWrap">
+      <svg class="ring-svg" viewBox="0 0 220 220">
+        <circle class="ring-bg" cx="110" cy="110" r="99.7"/>
+        <circle class="ring-arc" id="ringArc" cx="110" cy="110" r="99.7"/>
+      </svg>
+      <div class="ring-center">
+        <div class="ring-time" id="ringTime">00:00</div>
+        <div class="ring-sub">נותרו</div>
+      </div>
+      <div class="paused-banner">⏸ מושהה</div>
+    </div>
+
+    <div class="round-dots" id="roundDots"></div>
+
+    <div class="next-box" id="nextBox">
+      <div class="next-lbl">הבא</div>
+      <div class="next-name" id="nextName">—</div>
+    </div>
+
+    <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸</button>
+  </div>
+</div>
+
+<!-- ══ DONE OVERLAY ══ -->
+<div class="done-overlay" id="doneOverlay" style="display:none">
+  <div class="done-medal">🏅</div>
+  <div class="done-title">כל הכבוד!</div>
+  <div class="done-stats">
+    <div class="done-stat"><div class="v" id="doneTime">—</div><div class="l">זמן</div></div>
+    <div class="done-stat"><div class="v" id="doneRounds">—</div><div class="l">סיבובים</div></div>
+    <div class="done-stat"><div class="v" id="doneSteps">—</div><div class="l">שלבים</div></div>
+  </div>
+  <button class="done-again" onclick="restartWorkout()">🔁 שוב!</button>
+  <button class="done-home"  onclick="goHome()">חזור לתפריט</button>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// TYPE DEFINITIONS
+// ════════════════════════════════════════
+const TYPES = {
+  run:    { label: '🏃 ריצה',    color: '#00e676' },
+  walk:   { label: '🚶 הליכה',   color: '#40c4ff' },
+  rest:   { label: '😮‍💨 מנוחה',  color: '#ff9100' },
+  warmup: { label: '🔥 חימום',   color: '#d280ff' },
+};
+
+const PRESETS = {
+  c25k: {
+    rounds: 1,
+    ivs: [
+      {type:'warmup', m:5, s:0},
+      {type:'run',    m:1, s:0},
+      {type:'walk',   m:1, s:30},
+      {type:'run',    m:1, s:0},
+      {type:'walk',   m:1, s:30},
+      {type:'run',    m:1, s:0},
+      {type:'walk',   m:1, s:30},
+    ]
+  },
+  hiit2010: {
+    rounds: 8,
+    ivs: [
+      {type:'warmup', m:2, s:0},
+      {type:'run',    m:0, s:20},
+      {type:'rest',   m:0, s:10},
+    ]
+  },
+  tabata: {
+    rounds: 8,
+    ivs: [
+      {type:'run',  m:0, s:20},
+      {type:'rest', m:0, s:10},
+    ]
+  },
+  pyramid: {
+    rounds: 1,
+    ivs: [
+      {type:'run',  m:1, s:0},
+      {type:'walk', m:1, s:0},
+      {type:'run',  m:2, s:0},
+      {type:'walk', m:1, s:0},
+      {type:'run',  m:3, s:0},
+      {type:'walk', m:1, s:0},
+      {type:'run',  m:2, s:0},
+      {type:'walk', m:1, s:0},
+      {type:'run',  m:1, s:0},
+    ]
+  },
+  warmup: {
+    rounds: 1,
+    ivs: [
+      {type:'warmup', m:5, s:0},
+      {type:'run',    m:5, s:0},
+      {type:'walk',   m:2, s:0},
+      {type:'run',    m:5, s:0},
+      {type:'walk',   m:2, s:0},
+      {type:'rest',   m:3, s:0},
+    ]
+  },
+  empty: { rounds: 1, ivs: [] }
+};
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let rounds = 1;
+let ivData = [];   // [{id, type, m, s}]
+let uid = 0;
+
+// Workout
+let seq = [];       // expanded sequence
+let si = 0;         // current seq index
+let timeLeft = 0;
+let totalTime = 0;
+let timerRef = null;
+let paused = false;
+let wakeLock = null;
+
+// ════════════════════════════════════════
+// AUDIO (Web Audio API)
+// ════════════════════════════════════════
+let actx = null;
+function ctx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  return actx;
+}
+
+function beep(freq, dur, vol = 0.4, shape = 'sine') {
+  try {
+    const c = ctx();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type = shape;
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.start(); o.stop(c.currentTime + dur);
+  } catch(_) {}
+}
+
+function sndStart()    { beep(880,.12); setTimeout(()=>beep(880,.12),150); setTimeout(()=>beep(1320,.25),300); }
+function sndCountdown(){ beep(660,.12,.25); }
+function sndRun()      { beep(880,.12); setTimeout(()=>beep(1100,.22),140); }
+function sndWalk()     { beep(660,.2); setTimeout(()=>beep(550,.25),190); }
+function sndRest()     { beep(440,.3); }
+function sndWarmup()   { beep(660,.2); setTimeout(()=>beep(880,.2),180); }
+function sndDone()     { [880,1100,1320,1760].forEach((f,i)=>setTimeout(()=>beep(f,.3),i*170)); }
+
+function playTypeSound(type) {
+  const fn = { run:sndRun, walk:sndWalk, rest:sndRest, warmup:sndWarmup };
+  (fn[type] || sndRun)();
+}
+
+// ════════════════════════════════════════
+// SETUP UI
+// ════════════════════════════════════════
+function addInterval(type='run', m=1, s=0) {
+  ivData.push({ id: uid++, type, m, s });
+  renderIvList();
+  updateSummary();
+}
+
+function removeIv(id) {
+  ivData = ivData.filter(x => x.id !== id);
+  renderIvList();
+  updateSummary();
+}
+
+function setIvField(id, field, raw) {
+  const iv = ivData.find(x => x.id === id);
+  if (!iv) return;
+  let v = parseInt(raw) || 0;
+  if (field === 's') v = Math.min(59, Math.max(0, v));
+  if (field === 'm') v = Math.min(99, Math.max(0, v));
+  iv[field] = v;
+  if (field === 'type') renderIvList();
+  updateSummary();
+}
+
+function renderIvList() {
+  const list = document.getElementById('ivList');
+  list.innerHTML = '';
+  ivData.forEach((iv, idx) => {
+    const col = TYPES[iv.type]?.color || '#888';
+    const card = document.createElement('div');
+    card.className = 'iv-card';
+    card.style.setProperty('--iv-color', col);
+    card.innerHTML = `
+      <div class="iv-num">${idx+1}</div>
+      <select class="iv-type" onchange="setIvField(${iv.id},'type',this.value)">
+        ${Object.entries(TYPES).map(([k,v])=>
+          `<option value="${k}" ${iv.type===k?'selected':''}>${v.label}</option>`
+        ).join('')}
+      </select>
+      <div class="iv-dur">
+        <input class="dur-inp" type="number" min="0" max="99"
+          value="${iv.m}"
+          onchange="setIvField(${iv.id},'m',this.value)"
+          oninput="setIvField(${iv.id},'m',this.value)">
+        <span class="dur-sep">:</span>
+        <input class="dur-inp" type="number" min="0" max="59"
+          value="${String(iv.s).padStart(2,'0')}"
+          onchange="setIvField(${iv.id},'s',this.value)"
+          oninput="setIvField(${iv.id},'s',this.value)">
+      </div>
+      <button class="del-btn" onclick="removeIv(${iv.id})" title="מחק">×</button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function updateSummary() {
+  const singleRoundSecs = ivData.reduce((t,iv) => t + iv.m*60 + iv.s, 0);
+  const total = singleRoundSecs * rounds;
+  document.getElementById('sumSteps').textContent  = ivData.length * rounds;
+  document.getElementById('sumTotal').textContent  = fmtTime(total);
+  document.getElementById('sumRounds').textContent = rounds;
+}
+
+function changeRounds(d) {
+  rounds = Math.max(1, Math.min(30, rounds + d));
+  document.getElementById('roundsNum').textContent = rounds;
+  updateSummary();
+}
+
+function loadPreset(btn) {
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('sel'));
+  btn.classList.add('sel');
+  const p = PRESETS[btn.dataset.preset];
+  if (!p) return;
+  rounds = p.rounds;
+  document.getElementById('roundsNum').textContent = rounds;
+  ivData = p.ivs.map(x => ({ id: uid++, ...x }));
+  renderIvList();
+  updateSummary();
+}
+
+// ════════════════════════════════════════
+// WORKOUT LOGIC
+// ════════════════════════════════════════
+function buildSeq() {
+  const out = [];
+  for (let r = 0; r < rounds; r++) {
+    ivData.forEach((iv, i) => {
+      out.push({
+        type: iv.type,
+        label: TYPES[iv.type]?.label || iv.type,
+        color: TYPES[iv.type]?.color || '#888',
+        dur: iv.m*60 + iv.s,
+        round: r+1,
+        step: i,
+      });
+    });
+  }
+  return out;
+}
+
+function calcElapsed() {
+  const done = seq.slice(0, si).reduce((t, s) => t + s.dur, 0);
+  return done + (seq[si].dur - timeLeft);
+}
+
+function startWorkout() {
+  if (ivData.length === 0) { alert('הוסף לפחות שלב אחד!'); return; }
+  const tot = ivData.reduce((t,iv) => t + iv.m*60 + iv.s, 0);
+  if (tot === 0) { alert('הגדר זמן לשלב אחד לפחות!'); return; }
+
+  ctx(); // wake audio
+  seq = buildSeq();
+  si = 0;
+  totalTime = seq.reduce((t, s) => t + s.dur, 0);
+  paused = false;
+
+  showScreen('workoutScreen');
+  renderRoundDots();
+  applySeqItem(0);
+  sndStart();
+  requestWakeLock();
+  timerRef = setInterval(tick, 1000);
+}
+
+function applySeqItem(idx) {
+  si = idx;
+  const iv = seq[idx];
+  timeLeft = iv.dur;
+
+  // Label & color
+  const lbl = document.getElementById('curLabel');
+  lbl.textContent = iv.label;
+  lbl.style.color  = iv.color;
+
+  // Ring color
+  document.getElementById('ringArc').style.stroke = iv.color;
+
+  // Progress bar color
+  document.getElementById('progFill').style.background = iv.color;
+
+  // Next
+  const next = seq[idx+1];
+  if (next) {
+    document.getElementById('nextName').textContent = next.label;
+    document.getElementById('nextBox').style.display = '';
+  } else {
+    document.getElementById('nextBox').style.display = 'none';
+  }
+
+  // Round dots
+  updateRoundDots();
+
+  // Info text
+  document.getElementById('wkInfo').textContent =
+    `סיבוב ${iv.round} מתוך ${rounds} · שלב ${iv.step+1} מתוך ${ivData.length}`;
+
+  updateRingUI();
+}
+
+function updateRingUI() {
+  const iv = seq[si];
+  const pct = iv.dur > 0 ? timeLeft / iv.dur : 0;
+  // circumference = 2π × 99.7 ≈ 626.6
+  const circ = 626.6;
+  document.getElementById('ringArc').setAttribute('stroke-dashoffset', circ * (1 - pct));
+  document.getElementById('ringTime').textContent = fmtTime(timeLeft);
+
+  const elapsed = calcElapsed();
+  document.getElementById('progFill').style.width =
+    (totalTime > 0 ? (elapsed / totalTime) * 100 : 0) + '%';
+}
+
+function tick() {
+  if (paused) return;
+  timeLeft--;
+
+  // Countdown beeps on last 3 seconds
+  if (timeLeft > 0 && timeLeft <= 3) {
+    sndCountdown();
+    const el = document.getElementById('ringTime');
+    el.classList.remove('countdown');
+    void el.offsetWidth;
+    el.classList.add('countdown');
+  }
+
+  if (timeLeft <= 0) {
+    if (si + 1 < seq.length) {
+      applySeqItem(si + 1);
+      playTypeSound(seq[si].type);
+    } else {
+      finish();
+      return;
+    }
+  } else {
+    updateRingUI();
+  }
+}
+
+function togglePause() {
+  paused = !paused;
+  const btn = document.getElementById('pauseBtn');
+  const wrap = document.getElementById('ringWrap');
+  const lbl  = document.getElementById('curLabel');
+  btn.textContent = paused ? '▶' : '⏸';
+  btn.classList.toggle('paused', paused);
+  wrap.classList.toggle('paused', paused);
+  lbl.classList.toggle('paused', paused);
+}
+
+function stopWorkout() {
+  if (confirm('לעצור את האימון?')) {
+    clearInterval(timerRef); timerRef = null;
+    releaseWakeLock();
+    showScreen('setupScreen');
+  }
+}
+
+function finish() {
+  clearInterval(timerRef); timerRef = null;
+  releaseWakeLock();
+  sndDone();
+  document.getElementById('doneTime').textContent   = fmtTime(totalTime);
+  document.getElementById('doneRounds').textContent = rounds;
+  document.getElementById('doneSteps').textContent  = seq.length;
+  document.getElementById('doneOverlay').style.display = 'flex';
+}
+
+function restartWorkout() {
+  document.getElementById('doneOverlay').style.display = 'none';
+  startWorkout();
+}
+
+function goHome() {
+  document.getElementById('doneOverlay').style.display = 'none';
+  showScreen('setupScreen');
+}
+
+// ════════════════════════════════════════
+// ROUND DOTS
+// ════════════════════════════════════════
+function renderRoundDots() {
+  const c = document.getElementById('roundDots');
+  c.style.display = rounds > 1 ? 'flex' : 'none';
+  c.innerHTML = '';
+  for (let r = 1; r <= Math.min(rounds, 12); r++) {
+    const d = document.createElement('div');
+    d.className = 'rdot';
+    d.id = `rd-${r}`;
+    c.appendChild(d);
+  }
+}
+
+function updateRoundDots() {
+  if (rounds <= 1) return;
+  const cur = seq[si].round;
+  for (let r = 1; r <= Math.min(rounds, 12); r++) {
+    const d = document.getElementById(`rd-${r}`);
+    if (!d) continue;
+    d.className = 'rdot' + (r < cur ? ' done' : r === cur ? ' active' : '');
+  }
+}
+
+// ════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════
+function fmtTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ════════════════════════════════════════
+// WAKE LOCK (screen-on during workout)
+// ════════════════════════════════════════
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch(_) {}
+}
+
+function releaseWakeLock() {
+  if (wakeLock) { wakeLock.release(); wakeLock = null; }
+}
+
+// Re-acquire wake lock when page becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && timerRef) requestWakeLock();
+});
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+loadPreset(document.querySelector('[data-preset="c25k"]'));
+</script>
+</body>
+</html>
