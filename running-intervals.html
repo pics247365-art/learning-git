@@ -39,25 +39,57 @@
     header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 16px 20px 14px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
+      gap: 12px;
+      padding: 13px 16px;
+      background: linear-gradient(135deg, #161922 0%, #1b2445 100%);
+      border-bottom: 1px solid rgba(0,230,118,0.18);
       position: sticky;
       top: 0;
       z-index: 10;
     }
-    header .logo { font-size: 26px; }
-    header h1 { font-size: 19px; font-weight: 800; letter-spacing: -0.4px; }
-    header h1 em { font-style: normal; color: var(--run); }
-    header small {
-      margin-right: auto;
-      font-size: 11px;
-      color: var(--muted);
-      background: var(--surface2);
-      padding: 3px 8px;
-      border-radius: 20px;
+
+    .logo-box {
+      width: 48px; height: 48px;
+      background: rgba(0,230,118,0.09);
+      border: 1px solid rgba(0,230,118,0.28);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 18px rgba(0,230,118,0.18);
     }
+
+    .runner-svg {
+      width: 34px; height: 34px;
+      animation: runBob 0.52s ease-in-out infinite alternate;
+      overflow: visible;
+    }
+    .runner-svg .arm-r { animation: swingArmR 0.52s ease-in-out infinite alternate; transform-origin: 27px 19px; }
+    .runner-svg .arm-l { animation: swingArmL 0.52s ease-in-out infinite alternate; transform-origin: 27px 19px; }
+    .runner-svg .leg-r { animation: swingLegR 0.52s ease-in-out infinite alternate; transform-origin: 22px 28px; }
+    .runner-svg .leg-l { animation: swingLegL 0.52s ease-in-out infinite alternate; transform-origin: 22px 28px; }
+
+    @keyframes runBob   { from { transform: translateY(1px);  } to { transform: translateY(-2px); } }
+    @keyframes swingArmR{ from { transform: rotate(-22deg);   } to { transform: rotate(22deg);  } }
+    @keyframes swingArmL{ from { transform: rotate(22deg);    } to { transform: rotate(-22deg); } }
+    @keyframes swingLegR{ from { transform: rotate(-20deg);   } to { transform: rotate(20deg);  } }
+    @keyframes swingLegL{ from { transform: rotate(20deg);    } to { transform: rotate(-20deg); } }
+
+    .header-text { flex: 1; min-width: 0; }
+    .header-text h1 { font-size: 18px; font-weight: 900; letter-spacing: -0.4px; line-height: 1.15; }
+    .header-text h1 em { font-style: normal; color: var(--run); }
+    .header-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+    .share-btn {
+      background: rgba(0,230,118,0.08);
+      border: 1px solid rgba(0,230,118,0.22);
+      color: var(--run);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .share-btn:hover { background: rgba(0,230,118,0.18); }
 
     /* ── Screens ── */
     .screen { display: none; }
@@ -73,6 +105,16 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 9px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .section-label::before {
+      content: '';
+      width: 3px; height: 13px;
+      background: var(--run);
+      border-radius: 2px;
+      flex-shrink: 0;
     }
 
     /* Presets */
@@ -238,7 +280,18 @@
       letter-spacing: -0.2px;
       box-shadow: 0 4px 24px rgba(0,230,118,.28);
       transition: opacity 0.15s, transform 0.1s;
+      position: relative;
+      overflow: hidden;
     }
+    .start-btn::after {
+      content: '';
+      position: absolute;
+      top: 0; left: -80%;
+      width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+      animation: btnShimmer 2.4s ease-in-out infinite;
+    }
+    @keyframes btnShimmer { 0%,40% { left: -80%; } 100% { left: 160%; } }
     .start-btn:hover { opacity: .9; transform: translateY(-1px); }
     .start-btn:active { transform: translateY(0); }
 
@@ -464,9 +517,25 @@
 <body>
 
 <header>
-  <span class="logo">🏃</span>
-  <h1>ריצת <em>אינטרוולים</em></h1>
-  <small>שלח לחבר ✉</small>
+  <div class="logo-box">
+    <svg class="runner-svg" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+      <!-- head -->
+      <circle cx="30" cy="9" r="5" fill="#00e676"/>
+      <!-- torso -->
+      <path d="M28 14 Q25 21 22 28" stroke="#00e676" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+      <!-- arms -->
+      <line class="arm-r" x1="27" y1="19" x2="37" y2="14" stroke="#00e676" stroke-width="2.2" stroke-linecap="round"/>
+      <line class="arm-l" x1="27" y1="19" x2="18" y2="24" stroke="#00e676" stroke-width="2.2" stroke-linecap="round"/>
+      <!-- legs -->
+      <path class="leg-r" d="M22 28 L29 38 L35 41" stroke="#00e676" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <path class="leg-l" d="M22 28 L15 37 L8  39" stroke="#00e676" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>ריצת <em>אינטרוולים</em></h1>
+    <p class="header-sub">בנה את האימון שלך</p>
+  </div>
+  <button class="share-btn" onclick="shareApp()">שתף ✈</button>
 </header>
 
 <!-- ══ SETUP SCREEN ══ -->
@@ -986,6 +1055,23 @@ function releaseWakeLock() {
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && timerRef) requestWakeLock();
 });
+
+// ════════════════════════════════════════
+// SHARE
+// ════════════════════════════════════════
+async function shareApp() {
+  const ghUrl = 'https://raw.githubusercontent.com/pics247365-art/learning-git/claude/running-app-intervals-qyPG5/running-intervals.html';
+  const text  = `ריצת אינטרוולים 🏃\nאפליקציה חינמית ללא התקנה!\nהורד כאן: ${ghUrl}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'ריצת אינטרוולים', text }); return; } catch(_) {}
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('הועתק ✅\nהדבק בווטסאפ לחבר שלך 😊');
+  } catch(_) {
+    prompt('העתק את הקישור:', ghUrl);
+  }
+}
 
 // ════════════════════════════════════════
 // HISTORY (localStorage)
