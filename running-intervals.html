@@ -426,6 +426,39 @@
       .ring-wrap { width: 200px; height: 200px; }
       .ring-time { font-size: 44px; }
     }
+
+    /* ── History ── */
+    .hist-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 28px; margin-bottom: 9px;
+    }
+    .hist-clear {
+      background: none; border: none;
+      color: var(--muted); font-size: 12px;
+      cursor: pointer; text-decoration: underline;
+    }
+    .hist-totals { display: flex; gap: 9px; margin-bottom: 12px; }
+    .hist-total {
+      flex: 1; background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 10px 8px; text-align: center;
+    }
+    .hist-total .v { font-size: 20px; font-weight: 800; color: var(--run); }
+    .hist-total .l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .hist-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+    .hist-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .hist-dur { font-size: 18px; font-weight: 800; }
+    .hist-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .hist-date { font-size: 12px; color: var(--muted); text-align: left; }
+    .hist-empty {
+      text-align: center; color: var(--muted); font-size: 14px;
+      padding: 22px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
   </style>
 </head>
 <body>
@@ -472,6 +505,14 @@
     </div>
 
     <button class="start-btn" onclick="startWorkout()">▶ התחל אימון</button>
+
+    <!-- History -->
+    <div class="hist-header">
+      <div class="section-label" style="margin:0">היסטוריית אימונים</div>
+      <button class="hist-clear" onclick="clearHistory()">מחק הכל</button>
+    </div>
+    <div class="hist-totals" id="histTotals"></div>
+    <div class="hist-list"   id="histList"></div>
   </div>
 </div>
 
@@ -869,6 +910,7 @@ function finish() {
   clearInterval(timerRef); timerRef = null;
   releaseWakeLock();
   sndDone();
+  saveWorkout(totalTime, rounds, seq.length);
   document.getElementById('doneTime').textContent   = fmtTime(totalTime);
   document.getElementById('doneRounds').textContent = rounds;
   document.getElementById('doneSteps').textContent  = seq.length;
@@ -883,6 +925,7 @@ function restartWorkout() {
 function goHome() {
   document.getElementById('doneOverlay').style.display = 'none';
   showScreen('setupScreen');
+  renderHistory();
 }
 
 // ════════════════════════════════════════
@@ -945,9 +988,66 @@ document.addEventListener('visibilitychange', () => {
 });
 
 // ════════════════════════════════════════
+// HISTORY (localStorage)
+// ════════════════════════════════════════
+const HIST_KEY = 'ri_history';
+
+function saveWorkout(durationSecs, numRounds, numSteps) {
+  const history = loadHistory();
+  const now = new Date();
+  history.unshift({
+    date: now.toLocaleDateString('he-IL'),
+    time: now.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+    duration: durationSecs,
+    rounds: numRounds,
+    steps: numSteps,
+  });
+  localStorage.setItem(HIST_KEY, JSON.stringify(history.slice(0, 30)));
+}
+
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; }
+  catch(_) { return []; }
+}
+
+function renderHistory() {
+  const history = loadHistory();
+  const totalsEl = document.getElementById('histTotals');
+  const listEl   = document.getElementById('histList');
+
+  const totalSecs = history.reduce((t, h) => t + h.duration, 0);
+  totalsEl.innerHTML = `
+    <div class="hist-total"><div class="v">${history.length}</div><div class="l">אימונים</div></div>
+    <div class="hist-total"><div class="v">${fmtTime(totalSecs)}</div><div class="l">זמן כולל</div></div>
+  `;
+
+  if (history.length === 0) {
+    listEl.innerHTML = '<div class="hist-empty">עוד אין אימונים — בוא נתחיל! 🏃</div>';
+    return;
+  }
+  listEl.innerHTML = history.map(h => `
+    <div class="hist-item">
+      <div>
+        <div class="hist-dur">${fmtTime(h.duration)}</div>
+        <div class="hist-meta">${h.rounds} סיבובים · ${h.steps} שלבים</div>
+      </div>
+      <div class="hist-date">${h.date}<br>${h.time}</div>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  if (confirm('למחוק את כל היסטוריית האימונים?')) {
+    localStorage.removeItem(HIST_KEY);
+    renderHistory();
+  }
+}
+
+// ════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════
 loadPreset(document.querySelector('[data-preset="c25k"]'));
+renderHistory();
 </script>
 </body>
 </html>
