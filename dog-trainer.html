@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>מאלף 🐾 — אפליקציית אימוני כלבים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f4ee;--surface:#fff;--surface2:#f2ede3;--border:#e5ddd0;
+  --text:#1a1612;--t2:#6b6259;--t3:#b0a89f;
+  --green:#1f5c42;--gl:#d4ede1;--gd:#154232;
+  --amber:#c77700;--al:#fef3c7;
+  --terra:#c45128;--tl:#fff0ea;
+  --red:#dc2626;--rl:#fee2e2;
+  --nav:68px;--hdr:56px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;font-family:'Heebo',sans-serif;background:#e8e2d8;color:var(--text);font-size:15px;line-height:1.5;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;max-width:430px;margin:0 auto;background:var(--bg);position:relative;overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,.25)}
+
+/* ── HEADER ── */
+header{height:var(--hdr);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:10}
+.hdr-brand{flex:1}
+.hdr-name{font-size:20px;font-weight:900;color:var(--green);letter-spacing:-.5px;line-height:1}
+.hdr-name span{color:var(--amber)}
+.hdr-tagline{font-size:11px;color:var(--t3);font-weight:400}
+.hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--t2);transition:.15s;flex-shrink:0}
+.hdr-btn:active{background:var(--border)}
+
+/* ── MAIN ── */
+main{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:var(--nav);-webkit-overflow-scrolling:touch}
+main::-webkit-scrollbar{display:none}
+
+/* ── BOTTOM NAV ── */
+nav{position:absolute;bottom:0;left:0;right:0;height:var(--nav);background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:stretch;z-index:20;padding-bottom:env(safe-area-inset-bottom)}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:var(--t3);font-size:10px;font-family:'Heebo',sans-serif;font-weight:600;padding:0;transition:.15s}
+.ni svg{width:20px;height:20px;transition:.15s}
+.ni.active{color:var(--green)}
+.ni.active svg{stroke:var(--green)}
+.ni-center{flex:.9}
+.ni-fab{width:50px;height:50px;border-radius:50%;background:var(--green);color:#fff;border:3px solid var(--bg);display:flex;align-items:center;justify-content:center;margin-bottom:2px;box-shadow:0 4px 14px rgba(31,92,66,.4);transition:.15s}
+.ni-fab:active{transform:scale(.93);background:var(--gd)}
+
+/* ── VIEWS ── */
+.view{display:none}
+.view.active{display:block;animation:vin .22s ease}
+@keyframes vin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TYPOGRAPHY ── */
+.pg-hdr{padding:20px 16px 10px;display:flex;align-items:flex-end;justify-content:space-between}
+.pg-title{font-size:26px;font-weight:900;letter-spacing:-.5px;line-height:1.1}
+.pg-sub{font-size:13px;color:var(--t2);margin-top:3px;font-weight:400}
+.sec-lbl{padding:0 16px;margin-bottom:9px;font-size:11px;font-weight:700;color:var(--t3);letter-spacing:.4px;text-transform:uppercase}
+.spacer{height:16px}
+
+/* ── BUTTONS ── */
+.btn-primary{padding:8px 18px;border-radius:50px;background:var(--green);color:#fff;border:none;font-family:'Heebo',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:.15s;white-space:nowrap}
+.btn-primary:active{background:var(--gd)}
+.btn-ghost{padding:8px 18px;border-radius:50px;background:var(--surface2);color:var(--t2);border:1px solid var(--border);font-family:'Heebo',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-ghost:active{background:var(--border)}
+.btn-full{width:100%;padding:14px;border-radius:14px;background:var(--green);color:#fff;border:none;font-family:'Heebo',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:.15s}
+.btn-full:active{background:var(--gd)}
+.btn-full:disabled{opacity:.45;cursor:default}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border-radius:16px;border:1px solid var(--border)}
+.card-hdr{padding:12px 14px;border-bottom:1px solid var(--surface2);display:flex;align-items:center;justify-content:space-between}
+.card-hdr-title{font-size:13px;font-weight:700}
+.card-link{font-size:12px;color:var(--green);font-weight:700;cursor:pointer;border:none;background:none;font-family:'Heebo',sans-serif;padding:0}
+
+/* ── HERO ── */
+.hero{margin:14px 16px 14px;background:linear-gradient(135deg,#1f5c42 0%,#154232 100%);border-radius:22px;padding:20px;color:#fff;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-25px;left:-20px;width:130px;height:130px;background:rgba(255,255,255,.07);border-radius:50%}
+.hero::after{content:'';position:absolute;bottom:-30px;right:-15px;width:110px;height:110px;background:rgba(255,255,255,.05);border-radius:50%}
+.hero-greet{font-size:12px;opacity:.7;font-weight:400;position:relative}
+.hero-title{font-size:21px;font-weight:900;line-height:1.2;margin-top:3px;position:relative}
+.hero-body{font-size:13px;opacity:.7;margin-top:8px;position:relative}
+.hero-cta{margin-top:14px;display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:50px;padding:9px 18px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:'Heebo',sans-serif;transition:.15s;position:relative}
+.hero-cta:active{background:rgba(255,255,255,.28)}
+.hero-paw{position:absolute;bottom:10px;left:14px;font-size:44px;opacity:.1;line-height:1}
+
+/* ── STATS ROW ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 16px;margin-bottom:14px}
+.stat{background:var(--surface);border-radius:14px;padding:12px 6px;text-align:center;border:1px solid var(--border)}
+.stat-val{font-size:20px;font-weight:900;color:var(--text);line-height:1}
+.stat-lbl{font-size:10px;color:var(--t3);margin-top:3px;font-weight:600}
+.stat-ico{font-size:16px;margin-bottom:5px}
+
+/* ── SESSION ITEMS ── */
+.sess-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--surface2)}
+.sess-item:last-child{border-bottom:none}
+.sess-av{width:38px;height:38px;border-radius:50%;background:var(--gl);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;overflow:hidden}
+.sess-av img{width:100%;height:100%;object-fit:cover}
+.sess-info{flex:1;min-width:0}
+.sess-name{font-size:13px;font-weight:700}
+.sess-meta{font-size:11px;color:var(--t2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sess-dur{font-size:13px;font-weight:800;color:var(--green);flex-shrink:0}
+
+/* ── DOGS GRID ── */
+.dogs-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px}
+.dog-card{background:var(--surface);border-radius:18px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:.18s;active:transform}
+.dog-card:active{transform:scale(.97)}
+.dog-img{width:100%;aspect-ratio:1;background:linear-gradient(135deg,var(--gl) 0%,#fff 100%);display:flex;align-items:center;justify-content:center;font-size:50px;position:relative;overflow:hidden}
+.dog-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.dog-body{padding:11px 12px}
+.dog-name{font-size:15px;font-weight:800}
+.dog-breed{font-size:11px;color:var(--t2);margin-top:1px}
+.dog-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.tag{background:var(--surface2);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--t2);font-weight:600}
+.tag.green{background:var(--gl);color:var(--green)}
+.dog-add{background:var(--surface);border:2px dashed var(--border);border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer;min-height:170px;transition:.15s}
+.dog-add:active{border-color:var(--green)}
+.dog-add span{font-size:12px;color:var(--t3);font-weight:600}
+
+/* ── EXERCISE LIBRARY ── */
+.chips{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex-shrink:0;padding:7px 16px;border-radius:50px;background:var(--surface);border:1px solid var(--border);font-size:12px;color:var(--t2);cursor:pointer;font-family:'Heebo',sans-serif;font-weight:600;transition:.15s}
+.chip.active{background:var(--green);border-color:var(--green);color:#fff}
+.ex-list{padding:0 16px;display:flex;flex-direction:column;gap:9px}
+.ex-card{background:var(--surface);border-radius:14px;padding:13px;border:1px solid var(--border);display:flex;gap:12px;align-items:center;transition:.15s}
+.ex-ico{width:42px;height:42px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.ex-info{flex:1;min-width:0}
+.ex-name{font-size:14px;font-weight:700}
+.ex-desc{font-size:11px;color:var(--t2);margin-top:2px}
+.ex-foot{display:flex;align-items:center;gap:8px;margin-top:5px}
+.ex-cat-tag{border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700}
+.diff{display:flex;gap:2px}
+.d{width:5px;height:5px;border-radius:50%;background:var(--border)}
+.d.on{background:var(--amber)}
+.ex-add-btn{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+.ex-add-btn.off{background:var(--surface2);color:var(--t3)}
+.ex-add-btn.on{background:var(--green);color:#fff}
+
+/* ── TRAINING FORM ── */
+.dog-sel-row{display:flex;gap:10px;padding:0 16px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px}
+.dog-sel-row::-webkit-scrollbar{display:none}
+.dog-sel{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0}
+.dog-sel-av{width:52px;height:52px;border-radius:50%;border:3px solid transparent;display:flex;align-items:center;justify-content:center;font-size:24px;background:var(--surface2);transition:.15s;overflow:hidden}
+.dog-sel-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.dog-sel.sel .dog-sel-av{border-color:var(--green);background:var(--gl)}
+.dog-sel-nm{font-size:10px;font-weight:700;color:var(--t3);max-width:56px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dog-sel.sel .dog-sel-nm{color:var(--green)}
+.dur-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px;margin-bottom:14px}
+.dur-btn{padding:8px 16px;border-radius:50px;background:var(--surface);border:1px solid var(--border);font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;font-family:'Heebo',sans-serif;transition:.15s}
+.dur-btn.sel{background:var(--al);border-color:var(--amber);color:var(--amber)}
+.dur-custom{border:1px solid var(--border);border-radius:50px;padding:8px 14px;font-size:13px;font-weight:700;color:var(--text);background:var(--surface);font-family:'Heebo',sans-serif;width:80px;text-align:center;outline:none}
+.dur-custom:focus{border-color:var(--green)}
+.mood-row{display:flex;gap:8px;padding:0 16px;margin-bottom:14px}
+.mood-btn{flex:1;padding:9px 4px;border-radius:12px;background:var(--surface);border:1.5px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;font-size:9px;font-weight:700;color:var(--t3);font-family:'Heebo',sans-serif;transition:.15s}
+.mood-btn .me{font-size:20px}
+.mood-btn.sel{border-color:var(--green);color:var(--green);background:var(--gl)}
+.notes-ta{margin:0 16px 14px;border:1px solid var(--border);border-radius:14px;padding:12px;background:var(--surface);font-family:'Heebo',sans-serif;font-size:14px;color:var(--text);outline:none;resize:none;width:calc(100% - 32px);min-height:80px;display:block}
+.notes-ta:focus{border-color:var(--green)}
+.save-wrap{padding:0 16px}
+
+/* ── GALLERY ── */
+.gal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:0 16px}
+.gal-item{aspect-ratio:1;border-radius:8px;overflow:hidden;cursor:pointer;position:relative;background:var(--surface2)}
+.gal-item img{width:100%;height:100%;object-fit:cover;transition:.2s}
+.gal-item:active img{transform:scale(.97)}
+.gal-add{display:flex;align-items:center;justify-content:center;background:var(--surface);border:2px dashed var(--border);font-size:26px;cursor:pointer}
+
+/* ── PROGRESS ── */
+.prog-bar{height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),#52b788);border-radius:4px;transition:width .6s ease}
+
+/* ── BADGES ── */
+.badge-row{display:flex;gap:9px;padding:0 16px 2px;overflow-x:auto;scrollbar-width:none}
+.badge-row::-webkit-scrollbar{display:none}
+.badge{flex-shrink:0;background:var(--surface);border-radius:13px;padding:11px 8px;text-align:center;border:1px solid var(--border);min-width:72px;cursor:default}
+.badge-em{font-size:22px}
+.badge-nm{font-size:9px;font-weight:700;color:var(--t3);margin-top:4px;line-height:1.3}
+.badge.earned{border-color:#e8c44a;background:var(--al)}
+.badge.earned .badge-nm{color:var(--amber)}
+
+/* ── MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.overlay.open{display:flex;animation:fdin .2s}
+@keyframes fdin{from{opacity:0}to{opacity:1}}
+.modal{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:430px;max-height:92vh;display:flex;flex-direction:column;animation:sup .28s cubic-bezier(.32,0,.67,0)}
+@keyframes sup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0;flex-shrink:0}
+.modal-hdr{padding:14px 18px 10px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:17px;font-weight:800}
+.modal-x{width:30px;height:30px;border-radius:50%;background:var(--surface2);border:none;cursor:pointer;font-size:14px;color:var(--t2);display:flex;align-items:center;justify-content:center}
+.modal-body{padding:0 18px 28px;overflow-y:auto;flex:1}
+.modal-body::-webkit-scrollbar{display:none}
+
+/* ── FORMS ── */
+.fg{margin-bottom:14px}
+.fl{font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;display:block}
+.fi{width:100%;border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;font-size:14px;color:var(--text);background:var(--surface);font-family:'Heebo',sans-serif;outline:none;transition:.15s}
+.fi:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--gl)}
+.fi-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.photo-upload{width:100%;aspect-ratio:16/9;background:var(--surface2);border:2px dashed var(--border);border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;margin-bottom:14px;overflow:hidden;position:relative;transition:.15s}
+.photo-upload:active{border-color:var(--green)}
+.photo-upload img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo-upload-ico{font-size:28px;opacity:.45}
+.photo-upload-lbl{font-size:12px;color:var(--t3);font-weight:600}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(var(--nav) + 14px);left:50%;transform:translateX(-50%) translateY(12px);background:var(--text);color:#fff;padding:9px 20px;border-radius:50px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:.3s cubic-bezier(.22,.68,0,1.2);white-space:nowrap;font-family:'Heebo',sans-serif;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY STATE ── */
+.empty{padding:36px 20px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty-ico{font-size:48px;opacity:.4}
+.empty-ttl{font-size:16px;font-weight:700}
+.empty-desc{font-size:13px;color:var(--t2);line-height:1.5}
+
+/* ── DOG DETAIL ── */
+.detail-photo{width:100%;height:190px;object-fit:cover;border-radius:16px;margin-bottom:14px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:72px;overflow:hidden}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <header>
+    <div class="hdr-brand">
+      <div class="hdr-name">מאלף<span>.pro</span></div>
+      <div class="hdr-tagline">אפליקציית אימוני כלבים</div>
+    </div>
+    <button class="hdr-btn" onclick="openNotif()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <!-- ═══ HOME ═══ -->
+    <div id="v-home" class="view active">
+      <div class="hero">
+        <div class="hero-greet" id="h-greet"></div>
+        <div class="hero-title" id="h-title">ברוך הבא למאלף! 👋</div>
+        <div class="hero-body" id="h-body">מה האימון של היום?</div>
+        <button class="hero-cta" onclick="nav('v-train')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M5 3l14 9-14 9V3z"/></svg>
+          התחל אימון
+        </button>
+        <div class="hero-paw">🐾</div>
+      </div>
+
+      <div class="stats-row" id="h-stats"></div>
+
+      <div style="padding:0 16px 12px">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-hdr-title">אימונים אחרונים</span>
+            <button class="card-link" onclick="nav('v-train')">הכל</button>
+          </div>
+          <div id="h-recent"></div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">הישגים</div>
+      <div class="badge-row" id="h-badges"></div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- ═══ DOGS ═══ -->
+    <div id="v-dogs" class="view">
+      <div class="pg-hdr">
+        <div>
+          <div class="pg-title">הכלבים שלי</div>
+          <div class="pg-sub" id="dogs-sub"></div>
+        </div>
+        <button class="btn-primary" onclick="openAddDog()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M12 5v14M5 12h14"/></svg>
+          הוסף
+        </button>
+      </div>
+      <div class="dogs-grid" id="dogs-grid"></div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- ═══ TRAIN ═══ -->
+    <div id="v-train" class="view">
+      <div class="pg-hdr">
+        <div>
+          <div class="pg-title">אימון חדש</div>
+          <div class="pg-sub">רשום את מה שעשיתם</div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">בחר כלב</div>
+      <div class="dog-sel-row" id="t-dogs"></div>
+
+      <div class="sec-lbl">תרגילים</div>
+      <div style="padding:0 16px;margin-bottom:14px">
+        <div class="card">
+          <div class="card-hdr">
+            <span class="card-hdr-title" id="t-ex-count">לא נבחרו תרגילים</span>
+            <button class="card-link" onclick="openExPicker()">בחר +</button>
+          </div>
+          <div id="t-ex-chips" style="padding:8px 14px 12px;min-height:40px;display:flex;flex-wrap:wrap;gap:6px;align-items:center">
+            <span style="font-size:12px;color:var(--t3)">לחץ על "בחר +" להוסיף תרגילים</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec-lbl">משך האימון</div>
+      <div class="dur-row">
+        <button class="dur-btn" data-min="15" onclick="setDur(15)">15 ד'</button>
+        <button class="dur-btn sel" data-min="30" onclick="setDur(30)">30 ד'</button>
+        <button class="dur-btn" data-min="45" onclick="setDur(45)">45 ד'</button>
+        <button class="dur-btn" data-min="60" onclick="setDur(60)">שעה</button>
+        <input class="dur-custom" type="number" id="t-dur-custom" placeholder="אחר" min="1" max="300" oninput="onCustomDur()">
+      </div>
+
+      <div class="sec-lbl">מצב הכלב</div>
+      <div class="mood-row">
+        <button class="mood-btn" data-mood="excellent" onclick="setMood('excellent')"><span class="me">🌟</span>מצוין</button>
+        <button class="mood-btn sel" data-mood="good" onclick="setMood('good')"><span class="me">😊</span>טוב</button>
+        <button class="mood-btn" data-mood="ok" onclick="setMood('ok')"><span class="me">😐</span>סביר</button>
+        <button class="mood-btn" data-mood="tired" onclick="setMood('tired')"><span class="me">😴</span>עייף</button>
+      </div>
+
+      <div class="sec-lbl">הערות</div>
+      <textarea class="notes-ta" id="t-notes" placeholder="מה עבד טוב? מה צריך לשפר?..."></textarea>
+
+      <div class="save-wrap">
+        <button class="btn-full" id="save-btn" onclick="saveSession()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M5 13l4 4L19 7"/></svg>
+          שמור אימון
+        </button>
+      </div>
+
+      <div style="height:20px"></div>
+
+      <div style="padding:0 16px 0">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-title">היסטוריית אימונים</span></div>
+          <div id="t-history"></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- ═══ EXERCISES ═══ -->
+    <div id="v-exercises" class="view">
+      <div class="pg-hdr">
+        <div>
+          <div class="pg-title">ספריית תרגילים</div>
+          <div class="pg-sub">20 תרגילים מקצועיים</div>
+        </div>
+      </div>
+      <div style="padding:0 16px 12px">
+        <input class="fi" type="search" id="ex-search" placeholder="חפש תרגיל..." oninput="renderEx()" style="border-radius:50px">
+      </div>
+      <div class="chips" id="ex-chips"></div>
+      <div class="ex-list" id="ex-list"></div>
+      <div class="spacer"></div>
+    </div>
+
+    <!-- ═══ GALLERY ═══ -->
+    <div id="v-gallery" class="view">
+      <div class="pg-hdr">
+        <div>
+          <div class="pg-title">גלריה</div>
+          <div class="pg-sub">תמונות הכלבים שלך</div>
+        </div>
+        <button class="btn-primary" onclick="triggerGalleryUpload()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M12 5v14M5 12h14"/></svg>
+          הוסף
+        </button>
+      </div>
+      <div class="chips" id="gal-chips"></div>
+      <div class="gal-grid" id="gal-grid"></div>
+      <div class="spacer"></div>
+    </div>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav>
+    <button class="ni active" data-v="v-home" onclick="nav('v-home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      בית
+    </button>
+    <button class="ni" data-v="v-dogs" onclick="nav('v-dogs')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      כלבים
+    </button>
+    <button class="ni ni-center" onclick="nav('v-train')">
+      <div class="ni-fab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20"><path d="M5 3l14 9-14 9V3z"/></svg>
+      </div>
+      אימון
+    </button>
+    <button class="ni" data-v="v-exercises" onclick="nav('v-exercises')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20M6 20V10M12 20V4M18 20v-6"/></svg>
+      תרגילים
+    </button>
+    <button class="ni" data-v="v-gallery" onclick="nav('v-gallery')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      גלריה
+    </button>
+  </nav>
+</div>
+
+<!-- ══ MODAL: ADD DOG ══ -->
+<div class="overlay" id="m-add-dog" onclick="if(event.target===this)closeModal('m-add-dog')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-title">הוסף כלב חדש</span>
+      <button class="modal-x" onclick="closeModal('m-add-dog')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="photo-upload" id="dog-photo-box" onclick="document.getElementById('dog-photo-in').click()">
+        <div class="photo-upload-ico">🐕</div>
+        <div class="photo-upload-lbl">לחץ להוסיף תמונה (אופציונלי)</div>
+        <input type="file" id="dog-photo-in" accept="image/*" style="display:none" onchange="previewDogPic(this)">
+      </div>
+      <div class="fg">
+        <label class="fl">שם הכלב *</label>
+        <input class="fi" type="text" id="dog-name" placeholder="מקס, ביל, לולה...">
+      </div>
+      <div class="fg">
+        <label class="fl">גזע</label>
+        <input class="fi" type="text" id="dog-breed" placeholder="לברדור, גולדן רטריבר, מעורב...">
+      </div>
+      <div class="fi-grid">
+        <div class="fg">
+          <label class="fl">גיל (שנים)</label>
+          <input class="fi" type="number" id="dog-age" placeholder="2" min="0" max="25">
+        </div>
+        <div class="fg">
+          <label class="fl">משקל (ק"ג)</label>
+          <input class="fi" type="number" id="dog-weight" placeholder="15" min="0" max="100">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">הערות</label>
+        <textarea class="fi" id="dog-notes" placeholder="מידע שימושי, בעיות, נקודות חוזק..." style="resize:none;min-height:56px"></textarea>
+      </div>
+      <button class="btn-full" onclick="addDog()" style="margin-top:4px">שמור כלב</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: EXERCISE PICKER ══ -->
+<div class="overlay" id="m-ex-picker" onclick="if(event.target===this)closeModal('m-ex-picker')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-title">בחר תרגילים לאימון</span>
+      <button class="modal-x" onclick="closeModal('m-ex-picker')">✕</button>
+    </div>
+    <div class="modal-body" id="m-ex-body"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: DOG DETAIL ══ -->
+<div class="overlay" id="m-dog" onclick="if(event.target===this)closeModal('m-dog')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-hdr">
+      <span class="modal-title" id="m-dog-title"></span>
+      <button class="modal-x" onclick="closeModal('m-dog')">✕</button>
+    </div>
+    <div class="modal-body" id="m-dog-body"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL: PHOTO FULL ══ -->
+<div class="overlay" id="m-photo" onclick="closeModal('m-photo')" style="align-items:center">
+  <div style="padding:20px;width:100%;max-width:430px">
+    <img id="m-photo-img" style="width:100%;border-radius:18px;max-height:80vh;object-fit:contain">
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<input type="file" id="gal-file-in" accept="image/*" style="display:none" onchange="addGalPhoto(this)">
+
+<script>
+// ══ EXERCISES DATABASE ══════════════════════════════════════════════
+const EXDB = [
+  {id:'e1', name:'שב',          cat:'basic',     diff:1, em:'🐕',  desc:'הפקודה הבסיסית ביותר — הכלב יושב עד לשחרור'},
+  {id:'e2', name:'שכב',         cat:'basic',     diff:1, em:'🛏️',  desc:'הכלב שוכב על הבטן עם הרגליים קדימה'},
+  {id:'e3', name:'עמוד',        cat:'basic',     diff:2, em:'🐕‍🦺', desc:'הכלב עומד שקט על ארבע רגליים'},
+  {id:'e4', name:'בוא',         cat:'basic',     diff:2, em:'📣',  desc:'הכלב מגיע לידי בקריאת שמו'},
+  {id:'e5', name:'עצור',        cat:'obedience', diff:2, em:'✋',  desc:'הכלב נשאר במקומו עד לפקודת שחרור'},
+  {id:'e6', name:'הצד',         cat:'obedience', diff:3, em:'🚶',  desc:'צעידה מסודרת בצד שמאל עם קשר עין'},
+  {id:'e7', name:'עזוב',        cat:'obedience', diff:2, em:'🚫',  desc:'הכלב מפנה תשומת ליבו מחפץ או מזון'},
+  {id:'e8', name:'הבא',         cat:'obedience', diff:3, em:'🎾',  desc:'הכלב מביא חפץ שנזרק ומחזיר אותו ליד'},
+  {id:'e9', name:'תן יד',       cat:'tricks',    diff:2, em:'🤝',  desc:'הכלב מושיט כפה ימין לפקודה'},
+  {id:'e10',name:'הסתובב',      cat:'tricks',    diff:3, em:'🌀',  desc:'עיגול שלם עם גוף — שימוש בטריט כמדריך'},
+  {id:'e11',name:'שלום',        cat:'tricks',    diff:2, em:'👋',  desc:'הכלב מנופף בכפה לאחר פקודה'},
+  {id:'e12',name:'גלגל',        cat:'tricks',    diff:3, em:'🔄',  desc:'התגלגלות מצד לצד על הגב'},
+  {id:'e13',name:'שב יפה',      cat:'tricks',    diff:4, em:'🎭',  desc:'הכלב יושב על ירכיו בלבד — מאוזן'},
+  {id:'e14',name:'זחל',         cat:'advanced',  diff:4, em:'⬇️',  desc:'זחילה על הבטן קדימה ללא להרים כפות'},
+  {id:'e15',name:'בין הרגליים', cat:'tricks',    diff:4, em:'🦵',  desc:'הכלב עובר ביגולים דרך הרגליים'},
+  {id:'e16',name:'קפוץ',        cat:'agility',   diff:3, em:'⬆️',  desc:'קפיצה מעל מכשול — ניטור עומס ממפרקים'},
+  {id:'e17',name:'שוט',         cat:'agility',   diff:4, em:'🏃',  desc:'מסלול מכשולים מלא בקצב גבוה'},
+  {id:'e18',name:'עלה',         cat:'agility',   diff:3, em:'📐',  desc:'עלייה וירידה על גשר/קרש — בטחון בגבהים'},
+  {id:'e19',name:'חיפוש ריח',   cat:'cognitive', diff:3, em:'👃',  desc:'מציאת טריט/חפץ מוסתר לפי ריח'},
+  {id:'e20',name:'פאזל',        cat:'cognitive', diff:3, em:'🧩',  desc:'פתרון משחק אינטראקטיבי לכלבים'},
+];
+
+const CATS = {all:'הכל',basic:'יסודות',obedience:'ציות',tricks:'קסמים',agility:'אגיליטי',advanced:'מתקדם',cognitive:'קוגניטיבי'};
+const CAT_CLR = {basic:'#1f5c42',obedience:'#1d4ed8',tricks:'#c77700',agility:'#c45128',advanced:'#7c3aed',cognitive:'#0891b2'};
+const MOODS = {excellent:'🌟',good:'😊',ok:'😐',tired:'😴'};
+const DOG_EMS = ['🐕','🦮','🐩','🐕‍🦺','🐾'];
+
+// ══ STATE ══════════════════════════════════════════════════════════
+let DB = load();
+let curView = 'v-home';
+let selDog = null;
+let selEx = new Set();
+let selDur = 30;
+let selMood = 'good';
+let selGalDog = null;
+let pendGalDog = null;
+let dogPhotoData = null;
+let exCat = 'all';
+
+function load(){
+  try{const r=localStorage.getItem('maalef_v3');if(r)return JSON.parse(r);}catch(e){}
+  return{dogs:[],sessions:[],gallery:[]};
+}
+function save(){localStorage.setItem('maalef_v3',JSON.stringify(DB));}
+
+// ══ NAVIGATION ═════════════════════════════════════════════════════
+function nav(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.ni[data-v]').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const nb=document.querySelector(`.ni[data-v="${id}"]`);
+  if(nb)nb.classList.add('active');
+  curView=id;
+  document.querySelector('main').scrollTop=0;
+  if(id==='v-home')renderHome();
+  if(id==='v-dogs')renderDogs();
+  if(id==='v-train')renderTrain();
+  if(id==='v-exercises')renderEx();
+  if(id==='v-gallery')renderGallery();
+}
+
+// ══ HOME ═══════════════════════════════════════════════════════════
+function renderHome(){
+  const now=new Date();
+  const days=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+  const h=now.getHours();
+  const greet=h<5?'לילה טוב 🌙':h<12?'בוקר טוב ☀️':h<17?'צהריים טובים 🌤':h<21?'ערב טוב 🌆':'לילה טוב 🌙';
+  document.getElementById('h-greet').textContent=`יום ${days[now.getDay()]} · ${now.toLocaleDateString('he-IL',{day:'numeric',month:'long'})}`;
+  document.getElementById('h-title').textContent=greet;
+  const streak=calcStreak();
+  document.getElementById('h-body').textContent=streak>1?`רצף של ${streak} ימים 🔥`:'מה האימון של היום?';
+
+  const total=DB.sessions.length;
+  const mins=DB.sessions.reduce((s,x)=>s+(x.dur||0),0);
+  const wkAgo=Date.now()-7*24*60*60*1000;
+  const wk=DB.sessions.filter(s=>s.date>wkAgo).length;
+  document.getElementById('h-stats').innerHTML=`
+    <div class="stat"><div class="stat-ico">🏋️</div><div class="stat-val">${total}</div><div class="stat-lbl">אימונים</div></div>
+    <div class="stat"><div class="stat-ico">⏱️</div><div class="stat-val">${(mins/60).toFixed(1)}</div><div class="stat-lbl">שעות</div></div>
+    <div class="stat"><div class="stat-ico">📅</div><div class="stat-val">${wk}</div><div class="stat-lbl">השבוע</div></div>
+    <div class="stat"><div class="stat-ico">🔥</div><div class="stat-val">${streak}</div><div class="stat-lbl">רצף</div></div>
+  `;
+
+  const recent=[...DB.sessions].sort((a,b)=>b.date-a.date).slice(0,6);
+  const rEl=document.getElementById('h-recent');
+  if(!recent.length){
+    rEl.innerHTML='<div class="empty"><div class="empty-ico">🐾</div><div class="empty-desc">עדיין אין אימונים.<br>לחץ על "התחל אימון" למעלה!</div></div>';
+  }else{
+    rEl.innerHTML=recent.map(s=>{
+      const dog=DB.dogs.find(d=>d.id===s.dogId)||{name:'?',emoji:'🐕'};
+      const dt=new Date(s.date).toLocaleDateString('he-IL',{weekday:'short',day:'numeric',month:'short'});
+      const exs=(s.exercises||[]).map(id=>EXDB.find(e=>e.id===id)?.name).filter(Boolean).join(', ');
+      const av=dog.photo?`<img src="${dog.photo}" alt="${dog.name}">`:`<span style="font-size:18px">${dog.emoji||'🐕'}</span>`;
+      return`<div class="sess-item"><div class="sess-av">${av}</div><div class="sess-info"><div class="sess-name">${dog.name} ${MOODS[s.mood]||''}</div><div class="sess-meta">${dt}${exs?' · '+exs:''}</div></div><div class="sess-dur">${s.dur||0}ד'</div></div>`;
+    }).join('');
+  }
+  renderBadges();
+}
+
+function calcStreak(){
+  if(!DB.sessions.length)return 0;
+  const ds=[...new Set(DB.sessions.map(s=>new Date(s.date).toDateString()))].sort((a,b)=>new Date(b)-new Date(a));
+  let streak=0,prev=null;
+  for(const d of ds){
+    const cur=new Date(d);
+    if(!prev){streak=1;prev=cur;continue;}
+    const diff=(prev-cur)/(864e5);
+    if(diff<=1.5){streak++;prev=cur;}else break;
+  }
+  return streak;
+}
+
+function renderBadges(){
+  const ach=[
+    {em:'🏅',nm:'אימון ראשון',ok:()=>DB.sessions.length>=1},
+    {em:'⭐',nm:'5 אימונים',ok:()=>DB.sessions.length>=5},
+    {em:'🌟',nm:'10 אימונים',ok:()=>DB.sessions.length>=10},
+    {em:'🏆',nm:'50 אימונים',ok:()=>DB.sessions.length>=50},
+    {em:'⏰',nm:'שעת אימון',ok:()=>DB.sessions.some(s=>s.dur>=60)},
+    {em:'🔥',nm:'שבוע רצוף',ok:()=>calcStreak()>=7},
+    {em:'🐶',nm:'3 כלבים',ok:()=>DB.dogs.length>=3},
+    {em:'🎨',nm:'מגוון גדול',ok:()=>new Set(DB.sessions.flatMap(s=>s.exercises||[])).size>=10},
+  ];
+  document.getElementById('h-badges').innerHTML=ach.map(a=>{
+    const e=a.ok();
+    return`<div class="badge ${e?'earned':''}"><div class="badge-em">${e?a.em:'🔒'}</div><div class="badge-nm">${a.nm}</div></div>`;
+  }).join('');
+}
+
+// ══ DOGS ═══════════════════════════════════════════════════════════
+function renderDogs(){
+  const n=DB.dogs.length;
+  document.getElementById('dogs-sub').textContent=n?`${n} כלבים רשומים`:'הוסף את הכלב הראשון שלך';
+  const g=document.getElementById('dogs-grid');
+  if(!n){
+    g.innerHTML=`<div class="dog-add" style="grid-column:span 2;min-height:160px" onclick="openAddDog()"><svg viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" width="36" height="36"><path d="M12 5v14M5 12h14"/></svg><span>הוסף כלב ראשון</span></div>`;
+    return;
+  }
+  g.innerHTML=DB.dogs.map(d=>{
+    const sess=DB.sessions.filter(s=>s.dogId===d.id);
+    const lv=level(sess.length);
+    const img=d.photo?`<img src="${d.photo}" alt="${d.name}">`:`<span style="font-size:50px">${d.emoji||'🐕'}</span>`;
+    return`<div class="dog-card" onclick="openDog('${d.id}')">
+      <div class="dog-img">${img}</div>
+      <div class="dog-body">
+        <div class="dog-name">${d.name}</div>
+        <div class="dog-breed">${d.breed||'גזע לא ידוע'}${d.age?' · '+d.age+'y':''}</div>
+        <div class="dog-tags"><span class="tag green">${sess.length} אימונים</span><span class="tag">${lv.nm}</span></div>
+      </div>
+    </div>`;
+  }).join('')+`<div class="dog-add" onclick="openAddDog()"><svg viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" width="28" height="28"><path d="M12 5v14M5 12h14"/></svg><span>הוסף כלב</span></div>`;
+}
+
+function level(n){
+  if(n>=50)return{nm:'אלוף 🏆',p:100};
+  if(n>=20)return{nm:'מתקדם ⭐',p:n/50*100};
+  if(n>=10)return{nm:'בינוני 📈',p:n/20*100};
+  if(n>=5)return{nm:'מתחיל 🌱',p:n/10*100};
+  return{nm:'טירון 🐾',p:n/5*100};
+}
+
+function openAddDog(){
+  dogPhotoData=null;
+  ['dog-name','dog-breed','dog-age','dog-weight','dog-notes'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('dog-photo-box').innerHTML=`<div class="photo-upload-ico">🐕</div><div class="photo-upload-lbl">לחץ להוסיף תמונה (אופציונלי)</div><input type="file" id="dog-photo-in" accept="image/*" style="display:none" onchange="previewDogPic(this)">`;
+  document.getElementById('dog-photo-box').onclick=()=>document.getElementById('dog-photo-in').click();
+  openModal('m-add-dog');
+}
+
+function previewDogPic(inp){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    dogPhotoData=e.target.result;
+    const box=document.getElementById('dog-photo-box');
+    box.innerHTML=`<img src="${e.target.result}"><input type="file" id="dog-photo-in" accept="image/*" style="display:none" onchange="previewDogPic(this)">`;
+    box.onclick=()=>document.getElementById('dog-photo-in').click();
+  };
+  r.readAsDataURL(f);
+}
+
+function addDog(){
+  const nm=document.getElementById('dog-name').value.trim();
+  if(!nm){toast('נא להזין שם לכלב ⚠️');return;}
+  DB.dogs.push({
+    id:'dog_'+Date.now(),name:nm,
+    breed:document.getElementById('dog-breed').value.trim(),
+    age:document.getElementById('dog-age').value,
+    weight:document.getElementById('dog-weight').value,
+    notes:document.getElementById('dog-notes').value.trim(),
+    photo:dogPhotoData,
+    emoji:DOG_EMS[DB.dogs.length%DOG_EMS.length],
+    createdAt:Date.now(),
+  });
+  save(); closeModal('m-add-dog'); toast(`${nm} נוסף! 🐾`); renderDogs();
+}
+
+function openDog(id){
+  const d=DB.dogs.find(x=>x.id===id); if(!d)return;
+  const sess=DB.sessions.filter(s=>s.dogId===id).sort((a,b)=>b.date-a.date);
+  const mins=sess.reduce((t,s)=>t+(s.dur||0),0);
+  const lv=level(sess.length);
+  document.getElementById('m-dog-title').textContent=d.name;
+  const imgEl=d.photo
+    ?`<img src="${d.photo}" alt="${d.name}" class="detail-photo">`
+    :`<div class="detail-photo" style="background:var(--gl)">${d.emoji||'🐕'}</div>`;
+  document.getElementById('m-dog-body').innerHTML=`
+    ${imgEl}
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:16px">
+      <div class="stat"><div class="stat-ico">🏋️</div><div class="stat-val">${sess.length}</div><div class="stat-lbl">אימונים</div></div>
+      <div class="stat"><div class="stat-ico">⏱️</div><div class="stat-val">${(mins/60).toFixed(1)}h</div><div class="stat-lbl">שעות</div></div>
+      <div class="stat"><div class="stat-ico">📈</div><div class="stat-val" style="font-size:14px">${lv.nm}</div><div class="stat-lbl">רמה</div></div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--t2);margin-bottom:6px">התקדמות לרמה הבאה</div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${Math.min(lv.p,100)}%"></div></div>
+      <div style="font-size:11px;color:var(--t3);margin-top:3px">${Math.round(lv.p)}%</div>
+    </div>
+    ${(d.breed||d.age||d.weight)?`<div style="background:var(--surface2);border-radius:12px;padding:11px;margin-bottom:14px;font-size:13px;color:var(--t2);display:flex;flex-direction:column;gap:4px">
+      ${d.breed?`<div>🦴 גזע: <strong>${d.breed}</strong></div>`:''}
+      ${d.age?`<div>🎂 גיל: <strong>${d.age} שנים</strong></div>`:''}
+      ${d.weight?`<div>⚖️ משקל: <strong>${d.weight} ק"ג</strong></div>`:''}
+    </div>`:''}
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">אימונים אחרונים</div>
+    ${sess.length?sess.slice(0,8).map(s=>{
+      const dt=new Date(s.date).toLocaleDateString('he-IL',{weekday:'short',day:'numeric',month:'short'});
+      const exs=(s.exercises||[]).map(id=>EXDB.find(e=>e.id===id)?.name).filter(Boolean).join(', ');
+      return`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--surface2)">
+        <span style="font-size:18px">${MOODS[s.mood]||'😊'}</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">${dt}</div><div style="font-size:11px;color:var(--t3)">${exs||'ללא תרגילים ספציפיים'}</div></div>
+        <div style="font-size:13px;font-weight:800;color:var(--green)">${s.dur||0}ד'</div>
+      </div>`;
+    }).join(''):'<div class="empty"><div class="empty-ico">🏋️</div><div class="empty-desc">עדיין אין אימונים</div></div>'}
+    <button onclick="delDog('${id}')" style="width:100%;padding:11px;background:var(--rl);color:var(--red);border:1px solid #fca5a5;border-radius:12px;font-family:Heebo,sans-serif;font-size:13px;font-weight:700;cursor:pointer;margin-top:16px">🗑️ מחק כלב זה</button>
+  `;
+  openModal('m-dog');
+}
+
+function delDog(id){
+  if(!confirm('למחוק את הכלב ואת כל האימונים שלו?'))return;
+  DB.dogs=DB.dogs.filter(d=>d.id!==id);
+  DB.sessions=DB.sessions.filter(s=>s.dogId!==id);
+  DB.gallery=(DB.gallery||[]).filter(g=>g.dogId!==id);
+  save(); closeModal('m-dog'); toast('כלב נמחק'); renderDogs();
+}
+
+// ══ TRAINING ═══════════════════════════════════════════════════════
+function renderTrain(){
+  // dog selector
+  const el=document.getElementById('t-dogs');
+  if(!DB.dogs.length){
+    el.innerHTML=`<div style="padding:4px 0;font-size:13px;color:var(--t3)">הוסף כלב קודם ←</div>`;
+  }else{
+    el.innerHTML=DB.dogs.map(d=>{
+      const av=d.photo?`<img src="${d.photo}" alt="${d.name}">`:`<span style="font-size:24px">${d.emoji||'🐕'}</span>`;
+      return`<div class="dog-sel ${selDog===d.id?'sel':''}" onclick="pickDog('${d.id}')">
+        <div class="dog-sel-av">${av}</div>
+        <div class="dog-sel-nm">${d.name}</div>
+      </div>`;
+    }).join('');
+    if(!selDog&&DB.dogs.length)selDog=DB.dogs[0].id;
+    if(selDog)document.querySelector(`.dog-sel[onclick="pickDog('${selDog}')"]`)?.classList.add('sel');
+  }
+  renderSelEx();
+  renderTHistory();
+}
+
+function pickDog(id){
+  selDog=id;
+  document.querySelectorAll('.dog-sel').forEach(el=>el.classList.toggle('sel',el.getAttribute('onclick')===`pickDog('${id}')`));
+}
+
+function setDur(min){
+  selDur=min;
+  document.getElementById('t-dur-custom').value='';
+  document.querySelectorAll('.dur-btn').forEach(b=>b.classList.toggle('sel',+b.dataset.min===min));
+}
+
+function onCustomDur(){
+  const v=parseInt(document.getElementById('t-dur-custom').value);
+  if(v>0){selDur=v;document.querySelectorAll('.dur-btn').forEach(b=>b.classList.remove('sel'));}
+}
+
+function setMood(m){
+  selMood=m;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.toggle('sel',b.dataset.mood===m));
+}
+
+function renderSelEx(){
+  const cnt=document.getElementById('t-ex-count');
+  const chips=document.getElementById('t-ex-chips');
+  if(!selEx.size){
+    cnt.textContent='לא נבחרו תרגילים';
+    chips.innerHTML='<span style="font-size:12px;color:var(--t3)">לחץ על "בחר +" להוסיף תרגילים</span>';
+    return;
+  }
+  cnt.textContent=`${selEx.size} תרגילים נבחרו`;
+  chips.innerHTML=[...selEx].map(id=>{
+    const ex=EXDB.find(e=>e.id===id); if(!ex)return'';
+    return`<span onclick="selEx.delete('${id}');renderSelEx()" style="display:inline-flex;align-items:center;gap:4px;background:var(--gl);color:var(--green);border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer">${ex.em} ${ex.name} ×</span>`;
+  }).join('');
+}
+
+function openExPicker(){
+  const body=document.getElementById('m-ex-body');
+  const renderPicker=()=>{
+    body.innerHTML=`<div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">${EXDB.map(ex=>{
+      const on=selEx.has(ex.id);
+      return`<div onclick="tglEx('${ex.id}')" id="px-${ex.id}" style="display:inline-flex;align-items:center;gap:5px;padding:8px 13px;border-radius:10px;border:1.5px solid ${on?'var(--green)':'var(--border)'};background:${on?'var(--gl)':'var(--surface)'};cursor:pointer;font-size:13px;font-weight:700;color:${on?'var(--green)':'var(--text)'}">
+        <span>${ex.em}</span>${ex.name}
+      </div>`;
+    }).join('')}</div>
+    <button id="picker-confirm" onclick="closeModal('m-ex-picker');renderSelEx()" style="width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:Heebo,sans-serif;font-size:15px;font-weight:700;cursor:pointer">אשר (${selEx.size} תרגילים)</button>`;
+  };
+  renderPicker();
+  openModal('m-ex-picker');
+}
+
+function tglEx(id){
+  selEx.has(id)?selEx.delete(id):selEx.add(id);
+  const el=document.getElementById('px-'+id);
+  if(el){
+    const on=selEx.has(id);
+    el.style.borderColor=on?'var(--green)':'var(--border)';
+    el.style.background=on?'var(--gl)':'var(--surface)';
+    el.style.color=on?'var(--green)':'var(--text)';
+  }
+  const btn=document.getElementById('picker-confirm');
+  if(btn)btn.textContent=`אשר (${selEx.size} תרגילים)`;
+}
+
+function saveSession(){
+  if(!selDog&&!DB.dogs.length){toast('הוסף כלב קודם');nav('v-dogs');return;}
+  if(!selDog){toast('בחר כלב לאימון');return;}
+  DB.sessions.push({
+    id:'sess_'+Date.now(),dogId:selDog,date:Date.now(),
+    dur:selDur,exercises:[...selEx],mood:selMood,
+    notes:document.getElementById('t-notes').value.trim(),
+  });
+  save();
+  selEx.clear();
+  document.getElementById('t-notes').value='';
+  const dog=DB.dogs.find(d=>d.id===selDog);
+  toast(`אימון עם ${dog?.name||'הכלב'} נשמר! 🎉`);
+  renderTrain();
+  renderHome();
+}
+
+function renderTHistory(){
+  const el=document.getElementById('t-history');
+  const sess=[...DB.sessions].sort((a,b)=>b.date-a.date).slice(0,8);
+  if(!sess.length){
+    el.innerHTML='<div class="empty"><div class="empty-ico">📋</div><div class="empty-desc">אין אימונים עדיין</div></div>';
+    return;
+  }
+  el.innerHTML=sess.map(s=>{
+    const dog=DB.dogs.find(d=>d.id===s.dogId)||{name:'?',emoji:'🐕'};
+    const dt=new Date(s.date).toLocaleDateString('he-IL',{weekday:'short',day:'numeric',month:'short'});
+    const exs=(s.exercises||[]).map(id=>EXDB.find(e=>e.id===id)?.name).filter(Boolean).join(', ');
+    const av=dog.photo?`<img src="${dog.photo}" alt="${dog.name}">`:`<span style="font-size:18px">${dog.emoji||'🐕'}</span>`;
+    return`<div class="sess-item"><div class="sess-av">${av}</div><div class="sess-info"><div class="sess-name">${dog.name} ${MOODS[s.mood]||''}</div><div class="sess-meta">${dt}${exs?' · '+exs:''}</div></div><div class="sess-dur">${s.dur||0}ד'</div></div>`;
+  }).join('');
+}
+
+// ══ EXERCISES ══════════════════════════════════════════════════════
+function renderEx(){
+  const cats=['all','basic','obedience','tricks','agility','advanced','cognitive'];
+  document.getElementById('ex-chips').innerHTML=cats.map(c=>`<button class="chip ${exCat===c?'active':''}" onclick="setExCat('${c}')">${CATS[c]}</button>`).join('');
+  const q=(document.getElementById('ex-search')?.value||'').trim().toLowerCase();
+  const list=EXDB.filter(e=>{
+    const catOk=exCat==='all'||e.cat===exCat;
+    const qOk=!q||e.name.includes(q)||e.desc.includes(q);
+    return catOk&&qOk;
+  });
+  document.getElementById('ex-list').innerHTML=list.length?list.map(ex=>{
+    const clr=CAT_CLR[ex.cat]||'#666';
+    const on=selEx.has(ex.id);
+    return`<div class="ex-card">
+      <div class="ex-ico">${ex.em}</div>
+      <div class="ex-info">
+        <div class="ex-name">${ex.name}</div>
+        <div class="ex-desc">${ex.desc}</div>
+        <div class="ex-foot">
+          <span class="ex-cat-tag" style="background:${clr}18;color:${clr}">${CATS[ex.cat]}</span>
+          <div class="diff">${[1,2,3,4].map(i=>`<div class="d ${i<=ex.diff?'on':''}"></div>`).join('')}</div>
+        </div>
+      </div>
+      <button class="ex-add-btn ${on?'on':'off'}" onclick="tglExLib('${ex.id}',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="${on?'M5 13l4 4L19 7':'M12 5v14M5 12h14'}"/></svg>
+      </button>
+    </div>`;
+  }).join(''):'<div class="empty"><div class="empty-ico">🔍</div><div class="empty-ttl">לא נמצאו תרגילים</div></div>';
+}
+
+function setExCat(c){exCat=c;renderEx();}
+
+function tglExLib(id,btn){
+  selEx.has(id)?selEx.delete(id):selEx.add(id);
+  const on=selEx.has(id);
+  btn.className=`ex-add-btn ${on?'on':'off'}`;
+  btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="${on?'M5 13l4 4L19 7':'M12 5v14M5 12h14'}"/></svg>`;
+  toast(on?`${EXDB.find(e=>e.id===id)?.name} נוסף לאימון ✓`:'תרגיל הוסר');
+}
+
+// ══ GALLERY ════════════════════════════════════════════════════════
+function renderGallery(){
+  DB.gallery=DB.gallery||[];
+  const fc=document.getElementById('gal-chips');
+  fc.innerHTML=`<button class="chip ${!selGalDog?'active':''}" onclick="setGalDog(null)">הכל</button>`+
+    DB.dogs.map(d=>`<button class="chip ${selGalDog===d.id?'active':''}" onclick="setGalDog('${d.id}')">${d.name}</button>`).join('');
+  const photos=selGalDog?DB.gallery.filter(g=>g.dogId===selGalDog):DB.gallery;
+  document.getElementById('gal-grid').innerHTML=
+    photos.map(p=>`<div class="gal-item" onclick="viewPhoto('${p.id}')"><img src="${p.data}" loading="lazy" alt="תמונה"></div>`).join('');
+  if(!photos.length){
+    document.getElementById('gal-grid').innerHTML='<div class="empty" style="grid-column:span 3"><div class="empty-ico">📷</div><div class="empty-ttl">אין תמונות עדיין</div><div class="empty-desc">לחץ על הוסף למעלה</div></div>';
+  }
+}
+
+function setGalDog(id){selGalDog=id;renderGallery();}
+
+function triggerGalleryUpload(){
+  if(!DB.dogs.length){toast('הוסף כלב קודם');nav('v-dogs');return;}
+  pendGalDog=selGalDog||DB.dogs[0].id;
+  document.getElementById('gal-file-in').click();
+}
+
+function addGalPhoto(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    DB.gallery.push({id:'ph_'+Date.now(),dogId:pendGalDog,data:e.target.result,date:Date.now()});
+    save();inp.value='';toast('תמונה נוספה! 📸');renderGallery();
+  };
+  r.readAsDataURL(f);
+}
+
+function viewPhoto(id){
+  const p=DB.gallery.find(x=>x.id===id);if(!p)return;
+  document.getElementById('m-photo-img').src=p.data;
+  openModal('m-photo');
+}
+
+// ══ MODALS ═════════════════════════════════════════════════════════
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+function openNotif(){toast('אין התראות חדשות 🔔');}
+
+// ══ TOAST ══════════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg){
+  clearTimeout(toastTimer);
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
+}
+
+// ══ INIT ═══════════════════════════════════════════════════════════
+renderHome();
+if(DB.dogs.length)selDog=DB.dogs[0].id;
+// init exercise chips
+exCat='all';
+</script>
+</body>
+</html>
