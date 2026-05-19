@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FitPro">
 <meta name="theme-color" content="#0a0a0f">
+<link rel="manifest" id="pwa-manifest">
 <title>FitPro — אימון כושר</title>
 <style>
 :root {
@@ -352,6 +355,52 @@ h3 { font-size: 16px; font-weight: 600; }
 .text-center { text-align: center; }
 .empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
 .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+/* ─── Custom Plan ─── */
+.custom-plan-card {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border-radius: var(--radius); border: 2px dashed var(--border);
+  padding: 20px; margin-bottom: 14px; cursor: pointer;
+  display: flex; align-items: center; gap: 16px; transition: border-color .2s;
+}
+.custom-plan-card:active { border-color: var(--blue); }
+.custom-plan-card.has-content { border-style: solid; border-color: var(--blue); }
+.custom-plan-icon { font-size: 32px; }
+.custom-plan-info { flex: 1; }
+.custom-plan-name { font-size: 18px; font-weight: 800; }
+.custom-plan-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.custom-plan-arrow { color: var(--muted); font-size: 20px; }
+
+.ex-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.ex-form-full { grid-column: 1 / -1; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+.form-input {
+  background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); font-size: 15px; padding: 12px 14px; font-family: inherit;
+  transition: border-color .2s;
+}
+.form-input:focus { outline: none; border-color: var(--accent); }
+.custom-ex-item {
+  background: var(--card2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 14px; display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.custom-ex-info { flex: 1; }
+.custom-ex-name { font-size: 14px; font-weight: 700; }
+.custom-ex-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.del-btn { background: rgba(255,71,87,.15); border: 1px solid rgba(255,71,87,.3); border-radius: 6px; padding: 6px 10px; font-size: 14px; cursor: pointer; }
+
+/* ─── PWA ─── */
+.pwa-banner {
+  background: linear-gradient(135deg, #1a1a3e, #0d2a0d);
+  border: 1px solid var(--blue); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 14px;
+}
+.pwa-icon { font-size: 28px; }
+.pwa-text { flex: 1; }
+.pwa-title { font-size: 14px; font-weight: 700; }
+.pwa-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.btn-install { background: linear-gradient(135deg, var(--blue), #2255cc); color: #fff; padding: 10px 18px; font-size: 13px; width: auto; border-radius: 8px; }
 </style>
 </head>
 <body>
@@ -425,6 +474,29 @@ h3 { font-size: 16px; font-weight: 600; }
       <h2 style="margin-bottom:4px">תוכניות אימון</h2>
       <p class="muted mb-16">בחר תוכנית ולחץ על יום להתחלת אימון</p>
 
+      <div id="pwa-plans-banner"></div>
+
+      <div class="custom-plan-card" id="custom-plan-card" onclick="toggleCustomPlan()">
+        <div class="custom-plan-icon">✏️</div>
+        <div class="custom-plan-info">
+          <div class="custom-plan-name">התוכנית שלי</div>
+          <div class="custom-plan-sub" id="custom-plan-sub">בנה תוכנית אישית מותאמת לך</div>
+        </div>
+        <div class="custom-plan-arrow" id="custom-plan-arr">›</div>
+      </div>
+
+      <div id="custom-plan-days" class="hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="section-title" style="margin:0">ימי התוכנית</div>
+          <button class="btn btn-blue btn-sm" onclick="openAddDayModal()">+ הוסף יום</button>
+        </div>
+        <div id="custom-days-list"></div>
+        <button class="btn btn-primary" style="margin-top:8px" id="custom-start-btn" onclick="startCustomWorkout()" class="hidden">
+          🏋️ התחל אימון יומי
+        </button>
+      </div>
+
+      <div class="section-title" style="margin-top:24px">תוכניות מוכנות</div>
       <div id="plan-cards"></div>
 
       <div id="plan-days-section" class="hidden">
@@ -483,8 +555,20 @@ h3 { font-size: 16px; font-weight: 600; }
         </div>
       </div>
 
+      <div id="pwa-settings-section"></div>
+
       <div class="settings-group">
-        <div class="section-title">אפשרויות</div>
+        <div class="section-title">נתונים</div>
+        <div class="settings-row" onclick="exportData()" style="cursor:pointer">
+          <div class="settings-icon">📤</div>
+          <div class="settings-label">ייצוא נתונים (גיבוי)</div>
+          <div class="settings-val">›</div>
+        </div>
+        <div class="settings-row" onclick="importData()" style="cursor:pointer">
+          <div class="settings-icon">📥</div>
+          <div class="settings-label">ייבוא נתונים</div>
+          <div class="settings-val">›</div>
+        </div>
         <div class="settings-row" onclick="resetProgress()" style="cursor:pointer">
           <div class="settings-icon">🗑️</div>
           <div class="settings-label">איפוס התקדמות</div>
@@ -510,6 +594,81 @@ h3 { font-size: 16px; font-weight: 600; }
       <span class="icon">⚙️</span>הגדרות
     </button>
   </nav>
+</div>
+
+<!-- Add Day Modal -->
+<div class="modal-overlay" id="add-day-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">➕ הוסף יום אימון</div>
+    <div class="form-field" style="margin-bottom:16px">
+      <div class="form-label">שם היום</div>
+      <input class="form-input" id="day-name-input" placeholder="לדוגמה: חזה + טריצפס" maxlength="30">
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div class="form-label">תרגילים</div>
+      <button class="btn btn-blue btn-sm" onclick="openAddExModal()">+ תרגיל</button>
+    </div>
+    <div id="new-day-exercises"></div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-secondary" onclick="closeModal('add-day-modal')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveNewDay()">שמור יום ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Exercise Modal -->
+<div class="modal-overlay" id="add-ex-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏋️ הוסף תרגיל</div>
+    <div class="ex-form-grid">
+      <div class="form-field ex-form-full">
+        <div class="form-label">שם התרגיל</div>
+        <input class="form-input" id="ex-name" placeholder="לדוגמה: לחיצת חזה" maxlength="40">
+      </div>
+      <div class="form-field">
+        <div class="form-label">קבוצת שריר</div>
+        <input class="form-input" id="ex-muscle" placeholder="חזה, גב..." maxlength="20">
+      </div>
+      <div class="form-field">
+        <div class="form-label">סטים</div>
+        <input class="form-input" id="ex-sets" type="number" min="1" max="10" value="3" placeholder="3">
+      </div>
+      <div class="form-field">
+        <div class="form-label">חזרות</div>
+        <input class="form-input" id="ex-reps" placeholder="10-12" maxlength="10">
+      </div>
+      <div class="form-field">
+        <div class="form-label">מנוחה (שנ')</div>
+        <input class="form-input" id="ex-rest" type="number" min="0" max="300" value="60" placeholder="60">
+      </div>
+      <div class="form-field ex-form-full">
+        <div class="form-label">הוראות (אופציונלי)</div>
+        <input class="form-input" id="ex-desc" placeholder="תיאור קצר של הביצוע..." maxlength="120">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-secondary" onclick="closeModal('add-ex-modal')">ביטול</button>
+      <button class="btn btn-primary" onclick="saveNewExercise()">הוסף ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- iOS PWA Modal -->
+<div class="modal-overlay" id="ios-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📱 התקן על הטלפון</div>
+    <p style="color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:20px">
+      כדי להתקין את FitPro על מסך הבית של האייפון:<br><br>
+      1. לחץ על <strong style="color:var(--text)">כפתור השיתוף</strong> (⎙) בתחתית הדפדפן<br>
+      2. גלול מטה ובחר <strong style="color:var(--text)">"הוסף למסך הבית"</strong><br>
+      3. לחץ <strong style="color:var(--text)">הוסף</strong> בפינה הימנית עליונה<br><br>
+      האפליקציה תיפתח במסך מלא ללא כתובת הדפדפן ✓
+    </p>
+    <button class="btn btn-primary" onclick="closeModal('ios-modal')">הבנתי 👍</button>
+  </div>
 </div>
 
 <!-- Rest Modal -->
@@ -1241,9 +1400,352 @@ function resetProgress() {
 }
 
 // ═══════════════════════════════════════
+// CUSTOM PLAN
+// ═══════════════════════════════════════
+let pendingDayExercises = [];
+
+function toggleCustomPlan() {
+  const sec = document.getElementById('custom-plan-days');
+  const arr = document.getElementById('custom-plan-arr');
+  const isHidden = sec.classList.contains('hidden');
+  sec.classList.toggle('hidden', !isHidden);
+  arr.textContent = isHidden ? '▾' : '›';
+  if (isHidden) renderCustomDays();
+}
+
+function renderCustomDays() {
+  const days = state.customPlan ? state.customPlan.days : [];
+  const card = document.getElementById('custom-plan-card');
+  const sub = document.getElementById('custom-plan-sub');
+
+  if (days.length) {
+    card.classList.add('has-content');
+    sub.textContent = `${days.length} ימים · ${days.reduce((s,d)=>s+d.exercises.length,0)} תרגילים`;
+  } else {
+    card.classList.remove('has-content');
+    sub.textContent = 'בנה תוכנית אישית מותאמת לך';
+  }
+
+  const list = document.getElementById('custom-days-list');
+  if (!days.length) {
+    list.innerHTML = '<div class="empty" style="padding:20px"><div class="empty-icon">📝</div>עוד אין ימים.<br>לחץ "+ הוסף יום"</div>';
+    document.getElementById('custom-start-btn').classList.add('hidden');
+    return;
+  }
+
+  document.getElementById('custom-start-btn').classList.remove('hidden');
+
+  list.innerHTML = days.map((d, di) => `
+    <div class="day-item" style="flex-direction:column;align-items:flex-start;gap:8px">
+      <div style="display:flex;align-items:center;width:100%;gap:12px">
+        <div class="day-num">${di+1}</div>
+        <div class="day-info" style="flex:1">
+          <div class="day-name">${d.name}</div>
+          <div class="day-ex">${d.exercises.length} תרגילים · ${d.exercises.reduce((s,e)=>s+e.sets,0)} סטים</div>
+        </div>
+        <button class="del-btn" onclick="deleteCustomDay(${di})">🗑️</button>
+        <div class="day-arr" onclick="startWorkoutCustom(${di})" style="cursor:pointer">▶</div>
+      </div>
+    </div>`).join('');
+}
+
+function openAddDayModal() {
+  pendingDayExercises = [];
+  document.getElementById('day-name-input').value = '';
+  document.getElementById('new-day-exercises').innerHTML = '<div class="muted" style="padding:8px 0;text-align:center">עוד אין תרגילים</div>';
+  openModal('add-day-modal');
+}
+
+function openAddExModal() {
+  document.getElementById('ex-name').value = '';
+  document.getElementById('ex-muscle').value = '';
+  document.getElementById('ex-sets').value = '3';
+  document.getElementById('ex-reps').value = '';
+  document.getElementById('ex-rest').value = '60';
+  document.getElementById('ex-desc').value = '';
+  openModal('add-ex-modal');
+}
+
+function saveNewExercise() {
+  const name = document.getElementById('ex-name').value.trim();
+  if (!name) { alert('הכנס שם לתרגיל'); return; }
+  const ex = {
+    name,
+    muscleGroup: document.getElementById('ex-muscle').value.trim() || 'כללי',
+    sets: parseInt(document.getElementById('ex-sets').value) || 3,
+    reps: document.getElementById('ex-reps').value.trim() || '10',
+    rest: parseInt(document.getElementById('ex-rest').value) || 60,
+    desc: document.getElementById('ex-desc').value.trim() || ''
+  };
+  pendingDayExercises.push(ex);
+  closeModal('add-ex-modal');
+  renderPendingExercises();
+}
+
+function renderPendingExercises() {
+  const el = document.getElementById('new-day-exercises');
+  if (!pendingDayExercises.length) {
+    el.innerHTML = '<div class="muted" style="padding:8px 0;text-align:center">עוד אין תרגילים</div>';
+    return;
+  }
+  el.innerHTML = pendingDayExercises.map((e, i) => `
+    <div class="custom-ex-item">
+      <div class="custom-ex-info">
+        <div class="custom-ex-name">${e.name}</div>
+        <div class="custom-ex-meta">${e.sets} סטים × ${e.reps} · ${e.muscleGroup}</div>
+      </div>
+      <button class="del-btn" onclick="removePendingEx(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removePendingEx(i) {
+  pendingDayExercises.splice(i, 1);
+  renderPendingExercises();
+}
+
+function saveNewDay() {
+  const name = document.getElementById('day-name-input').value.trim();
+  if (!name) { alert('הכנס שם ליום'); return; }
+  if (!pendingDayExercises.length) { alert('הוסף לפחות תרגיל אחד'); return; }
+
+  if (!state.customPlan) state.customPlan = { name: 'התוכנית שלי', days: [] };
+  state.customPlan.days.push({ name, exercises: [...pendingDayExercises] });
+  save();
+  closeModal('add-day-modal');
+  renderCustomDays();
+}
+
+function deleteCustomDay(i) {
+  if (!confirm('למחוק יום זה?')) return;
+  state.customPlan.days.splice(i, 1);
+  save();
+  renderCustomDays();
+}
+
+function startWorkoutCustom(dayIdx) {
+  if (!state.customPlan || !state.customPlan.days[dayIdx]) return;
+  const day = state.customPlan.days[dayIdx];
+
+  workout.plan = '__custom__';
+  workout.dayIdx = dayIdx;
+  workout.exIdx = 0;
+  workout.setIdx = 0;
+  workout.startTime = Date.now();
+  workout.customDay = day;
+
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s-workout').classList.add('active');
+  renderWorkoutCustom();
+}
+
+function startCustomWorkout() {
+  if (!state.customPlan || !state.customPlan.days.length) return;
+  const dayIdx = state.customPlan.lastDay || 0;
+  startWorkoutCustom(dayIdx % state.customPlan.days.length);
+}
+
+function renderWorkoutCustom() {
+  const day = workout.customDay;
+  const ex = day.exercises[workout.exIdx];
+  const totalEx = day.exercises.length;
+  const pct = (workout.exIdx / totalEx) * 100;
+
+  const dots = Array.from({ length: ex.sets }, (_, i) => {
+    const cls = i < workout.setIdx ? 'done' : i === workout.setIdx ? 'current' : '';
+    return `<div class="set-dot ${cls}">${i < workout.setIdx ? '✓' : i + 1}</div>`;
+  }).join('');
+
+  document.getElementById('workout-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <button class="btn btn-ghost btn-sm" style="width:auto" onclick="quitWorkout()">✕ יציאה</button>
+      <div style="flex:1">
+        <div style="font-size:12px;color:var(--muted)">${day.name}</div>
+        <div style="font-size:13px;font-weight:700">${workout.exIdx + 1} מתוך ${totalEx}</div>
+      </div>
+      <div id="workout-clock" style="font-size:13px;font-weight:700;color:var(--accent)">00:00</div>
+    </div>
+    <div class="workout-progress-bar">
+      <div class="workout-progress-fill" style="width:${pct}%"></div>
+    </div>
+    <div class="exercise-card">
+      <div class="ex-muscle">${ex.muscleGroup}</div>
+      <div class="ex-name">${ex.name}</div>
+      ${ex.desc ? `<div class="ex-desc">${ex.desc}</div>` : ''}
+      <div class="ex-big">
+        <div class="ex-stat"><div class="ex-stat-num">${ex.sets}</div><div class="ex-stat-label">סטים</div></div>
+        <div class="ex-stat"><div class="ex-stat-num" style="font-size:28px">${ex.reps}</div><div class="ex-stat-label">חזרות</div></div>
+        <div class="ex-stat"><div class="ex-stat-num" style="font-size:28px">${ex.rest}s</div><div class="ex-stat-label">מנוחה</div></div>
+      </div>
+      <div class="sets-track">${dots}</div>
+      <div style="font-size:13px;color:var(--muted)">סט ${workout.setIdx + 1} מתוך ${ex.sets}</div>
+    </div>
+    <div class="workout-actions">
+      <button class="btn btn-done" onclick="completeSetCustom()">✓ סט הושלם!</button>
+      <button class="btn btn-secondary" onclick="skipExCustom()">דלג על תרגיל ›</button>
+    </div>`;
+  startClock();
+}
+
+function completeSetCustom() {
+  vibrate([30]);
+  const day = workout.customDay;
+  const ex = day.exercises[workout.exIdx];
+  workout.setIdx++;
+  if (workout.setIdx >= ex.sets) {
+    workout.exIdx++; workout.setIdx = 0;
+    if (workout.exIdx >= day.exercises.length) { finishWorkoutCustom(); return; }
+  }
+  if (ex.rest > 0) { openRest(ex.rest, () => renderWorkoutCustom()); } else { renderWorkoutCustom(); }
+}
+
+function skipExCustom() {
+  workout.exIdx++; workout.setIdx = 0;
+  if (workout.exIdx >= workout.customDay.exercises.length) { finishWorkoutCustom(); } else { renderWorkoutCustom(); }
+}
+
+function finishWorkoutCustom() {
+  if (workout.timer) clearInterval(workout.timer);
+  closeRest();
+  const day = workout.customDay;
+  const dur = Math.round((Date.now() - workout.startTime) / 60000);
+  const muscles = [...new Set(day.exercises.map(e => e.muscleGroup))];
+  const totalSets = day.exercises.reduce((s, e) => s + e.sets, 0);
+  state.log.unshift({ ts: Date.now(), plan: 'התוכנית שלי', day: day.name, dur, muscles, sets: totalSets });
+  const today = new Date().toDateString();
+  if (state.lastWorkoutDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    state.streak = state.lastWorkoutDate === yesterday ? state.streak + 1 : 1;
+  }
+  state.lastWorkoutDate = today;
+  if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+  if (state.customPlan) state.customPlan.lastDay = (workout.dayIdx + 1) % state.customPlan.days.length;
+  save();
+  document.getElementById('workout-body').innerHTML = `
+    <div class="complete-screen">
+      <div class="complete-emoji">🏆</div>
+      <div class="complete-title">אימון הושלם!</div>
+      <div class="complete-sub">${day.name}</div>
+      <div class="complete-stats">
+        <div class="complete-stat"><div class="complete-stat-num">${dur}</div><div class="complete-stat-label">דקות</div></div>
+        <div class="complete-stat"><div class="complete-stat-num">${totalSets}</div><div class="complete-stat-label">סטים</div></div>
+        <div class="complete-stat"><div class="complete-stat-num">${state.streak}</div><div class="complete-stat-label">רצף ימים</div></div>
+      </div>
+      <button class="btn btn-primary" onclick="nav('home')" style="margin-bottom:12px">🏠 חזרה לבית</button>
+      <button class="btn btn-secondary" onclick="nav('progress')">📈 ראה התקדמות</button>
+    </div>`;
+  vibrate([50, 30, 50, 30, 100]);
+}
+
+// ═══════════════════════════════════════
+// MODAL HELPERS
+// ═══════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ═══════════════════════════════════════
+// PWA
+// ═══════════════════════════════════════
+let deferredPrompt = null;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+function initPWA() {
+  // Inline manifest
+  const iconSvg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230a0a0f'/><text y='.9em' font-size='80' x='10'>🏋️</text></svg>`;
+  const manifest = {
+    name: 'FitPro — אימון כושר',
+    short_name: 'FitPro',
+    description: 'אפליקציית כושר אימון אישית',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#0a0a0f',
+    theme_color: '#0a0a0f',
+    lang: 'he',
+    dir: 'rtl',
+    icons: [
+      { src: `data:image/svg+xml,${iconSvg}`, sizes: '192x192', type: 'image/svg+xml' },
+      { src: `data:image/svg+xml,${iconSvg}`, sizes: '512x512', type: 'image/svg+xml' }
+    ]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+
+  if (isStandalone) return;
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    renderPWABanner();
+  });
+
+  if (isIOS) renderPWABanner();
+}
+
+function renderPWABanner() {
+  if (isStandalone) return;
+  const html = `
+    <div class="pwa-banner">
+      <div class="pwa-icon">📲</div>
+      <div class="pwa-text">
+        <div class="pwa-title">התקן על הטלפון</div>
+        <div class="pwa-sub">שמור אפליקציה + נתונים על המכשיר</div>
+      </div>
+      <button class="btn btn-install" onclick="installPWA()">התקן</button>
+    </div>`;
+  const plansBanner = document.getElementById('pwa-plans-banner');
+  const settingsBanner = document.getElementById('pwa-settings-section');
+  if (plansBanner) plansBanner.innerHTML = html;
+  if (settingsBanner) settingsBanner.innerHTML = `<div class="settings-group"><div class="section-title">אפליקציה</div><div class="settings-row" onclick="installPWA()" style="cursor:pointer"><div class="settings-icon">📲</div><div class="settings-label">התקן על מסך הבית</div><div class="settings-val">›</div></div></div>`;
+}
+
+function installPWA() {
+  if (isIOS) { openModal('ios-modal'); return; }
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+  } else {
+    openModal('ios-modal');
+  }
+}
+
+// ═══════════════════════════════════════
+// EXPORT / IMPORT
+// ═══════════════════════════════════════
+function exportData() {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `fitpro-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!confirm('לייבא ולהחליף את כל הנתונים הקיימים?')) return;
+        state = { ...state, ...imported };
+        save(); renderHome(); renderSettings();
+        alert('הנתונים יובאו בהצלחה ✓');
+      } catch(err) { alert('קובץ לא תקין'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
 load();
+initPWA();
 if (state.user.name && state.user.name !== 'חבר') {
   document.getElementById('onboard').style.display = 'none';
 }
