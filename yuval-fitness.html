@@ -103,10 +103,10 @@ input[type="text"], input[type="number"], select {
 
     <div class="screen active" id="screen-home">
       <div class="home-grid">
-        <button class="home-btn" onclick="showScreen('new-workout')">New Workout</button>
-        <button class="home-btn" onclick="showScreen('my-workouts')">My Workouts</button>
+        <button class="home-btn" onclick="backTarget='home'; showScreen('new-workout')">New Workout</button>
+        <button class="home-btn" onclick="backTarget='home'; showScreen('my-workouts')">My Workouts</button>
         <button class="home-btn" onclick="openLibrary(null)">Exercise Library</button>
-        <button class="home-btn" onclick="showScreen('settings')">Settings</button>
+        <button class="home-btn" onclick="backTarget='home'; showScreen('settings')">Settings</button>
       </div>
     </div>
 
@@ -180,9 +180,9 @@ function save(workouts) {
 
 let currentWorkoutId = null;
 let libraryReturnTarget = null;
-let screenStack = [];
+let backTarget = 'home';
 
-function showScreen(id, push = true) {
+function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
   document.getElementById('back-btn').style.display = id === 'home' ? 'none' : 'inline-block';
@@ -191,15 +191,17 @@ function showScreen(id, push = true) {
     'editor': 'Workout', 'library': 'Exercise Library', 'settings': 'Settings'
   };
   document.getElementById('header-title').textContent = titles[id] || 'Yuval Fitness';
-  if (push) screenStack.push(id);
   if (id === 'my-workouts') renderWorkoutsList();
   if (id === 'library') renderLibrary();
 }
 
 function goBack() {
-  screenStack.pop();
-  const prev = screenStack.pop() || 'home';
-  showScreen(prev);
+  if (backTarget === 'editor') {
+    showScreen('editor');
+    renderEditor();
+  } else {
+    showScreen('home');
+  }
 }
 
 function createWorkout() {
@@ -228,6 +230,7 @@ function renderWorkoutsList() {
 
 function openEditor(id) {
   currentWorkoutId = id;
+  backTarget = 'home';
   showScreen('editor');
   renderEditor();
 }
@@ -274,6 +277,7 @@ function deleteExercise(index) {
 
 function openLibrary(forWorkoutId) {
   libraryReturnTarget = forWorkoutId;
+  backTarget = forWorkoutId ? 'editor' : 'home';
   showScreen('library');
 }
 
@@ -296,8 +300,8 @@ function addExerciseFromLibrary(name) {
   workout.exercises.push({ name, sets: 3, reps: 10, rest: '60s' });
   save(workouts);
   currentWorkoutId = libraryReturnTarget;
-  screenStack.pop();
-  showScreen('editor', false);
+  backTarget = 'home';
+  showScreen('editor');
   renderEditor();
 }
 
