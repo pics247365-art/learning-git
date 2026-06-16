@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yuval Fitness</title>
+<style>
+:root {
+  --blue: #2563eb;
+  --border: #e2e2e2;
+  --muted: #6b6b6b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #fff; color: #000; font-family: -apple-system, system-ui, Arial, sans-serif; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+header button.back {
+  background: none; border: none; font-size: 20px; color: var(--blue);
+  cursor: pointer; padding: 4px 8px;
+}
+header h1 { font-size: 18px; font-weight: 600; }
+
+main { flex: 1; overflow-y: auto; padding: 16px; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+button {
+  font-family: inherit; cursor: pointer; border-radius: 8px;
+}
+
+.btn-primary {
+  width: 100%; padding: 16px; background: var(--blue); color: #fff;
+  border: none; font-size: 16px; font-weight: 600; border-radius: 10px;
+}
+.btn-primary:active { opacity: 0.85; }
+
+.btn-secondary {
+  width: 100%; padding: 14px; background: #fff; color: #000;
+  border: 1px solid var(--border); font-size: 15px; border-radius: 10px;
+}
+
+.home-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 8px; }
+.home-btn {
+  width: 100%; padding: 28px; background: #fff; color: #000;
+  border: 1px solid var(--border); border-radius: 12px;
+  font-size: 18px; font-weight: 600; text-align: center;
+}
+.home-btn:active { background: #f5f5f5; }
+
+label { display: block; font-size: 13px; color: var(--muted); margin: 16px 0 6px; }
+input[type="text"], input[type="number"], select {
+  width: 100%; padding: 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-size: 15px; color: #000; background: #fff;
+}
+
+.field-block { margin-bottom: 8px; }
+
+.list-item {
+  width: 100%; text-align: left; padding: 16px; border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 10px; background: #fff; font-size: 16px;
+}
+.list-item:active { background: #f5f5f5; }
+.list-empty { color: var(--muted); text-align: center; padding: 40px 0; }
+
+.exercise-row {
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 10px;
+}
+.exercise-row .ex-name { font-weight: 600; font-size: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+.ex-fields { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.ex-fields div { display: flex; flex-direction: column; gap: 4px; }
+.ex-fields label { margin: 0; font-size: 11px; }
+.ex-fields input { padding: 8px; font-size: 14px; }
+.delete-btn { background: none; border: none; color: #c00; font-size: 13px; }
+
+.editor-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+.editor-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
+.search-box { margin-bottom: 16px; }
+
+@media print {
+  header, .editor-actions, #search-box, nav { display: none !important; }
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; top: 0; left: 0; width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <button class="back" id="back-btn" onclick="goBack()" style="display:none">&#8592;</button>
+    <h1 id="header-title">Yuval Fitness</h1>
+  </header>
+
+  <main>
+
+    <div class="screen active" id="screen-home">
+      <div class="home-grid">
+        <button class="home-btn" onclick="showScreen('new-workout')">New Workout</button>
+        <button class="home-btn" onclick="showScreen('my-workouts')">My Workouts</button>
+        <button class="home-btn" onclick="openLibrary(null)">Exercise Library</button>
+        <button class="home-btn" onclick="showScreen('settings')">Settings</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-new-workout">
+      <div class="field-block">
+        <label>Workout name</label>
+        <input type="text" id="new-workout-name" placeholder="e.g. Monday Push Day">
+      </div>
+      <div class="field-block">
+        <label>Template</label>
+        <select id="new-workout-template">
+          <option value="Full Body">Full Body</option>
+          <option value="Push">Push</option>
+          <option value="Pull">Pull</option>
+          <option value="Legs">Legs</option>
+        </select>
+      </div>
+      <div style="margin-top:24px">
+        <button class="btn-primary" onclick="createWorkout()">Create Workout</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-my-workouts">
+      <div id="workouts-list"></div>
+    </div>
+
+    <div class="screen" id="screen-editor">
+      <div class="editor-title" id="editor-workout-name"></div>
+      <div id="editor-exercise-list"></div>
+      <div class="editor-actions">
+        <button class="btn-secondary" onclick="openLibrary(currentWorkoutId)">Add Exercise</button>
+        <button class="btn-secondary" onclick="exportPdf()">Export PDF</button>
+      </div>
+    </div>
+
+    <div class="screen" id="screen-library">
+      <div class="search-box">
+        <input type="text" id="search-box" placeholder="Search exercises" oninput="renderLibrary()">
+      </div>
+      <div id="library-list"></div>
+    </div>
+
+    <div class="screen" id="screen-settings">
+      <p style="color:var(--muted); font-size:14px; margin-bottom:20px">Yuval Fitness v1.0</p>
+      <button class="btn-secondary" onclick="clearAllData()">Clear All Data</button>
+    </div>
+
+  </main>
+</div>
+
+<div id="print-area" style="display:none"></div>
+
+<script>
+const EXERCISES = [
+  "Barbell Bench Press","Incline Dumbbell Press","Decline Bench Press","Push-Up","Cable Fly",
+  "Dumbbell Shoulder Press","Overhead Barbell Press","Lateral Raise","Front Raise","Rear Delt Fly",
+  "Pull-Up","Lat Pulldown","Barbell Row","Dumbbell Row","Seated Cable Row","Face Pull",
+  "Deadlift","Romanian Deadlift","Back Squat","Front Squat","Leg Press","Walking Lunge",
+  "Leg Extension","Leg Curl","Calf Raise","Hip Thrust","Bulgarian Split Squat",
+  "Barbell Curl","Dumbbell Curl","Hammer Curl","Tricep Pushdown","Skull Crusher","Dips",
+  "Plank","Hanging Leg Raise","Cable Crunch","Russian Twist","Side Plank",
+  "Farmer's Carry","Kettlebell Swing","Box Jump","Battle Ropes","Burpee"
+].sort();
+
+function load() {
+  return JSON.parse(localStorage.getItem('yf_workouts') || '[]');
+}
+function save(workouts) {
+  localStorage.setItem('yf_workouts', JSON.stringify(workouts));
+}
+
+let currentWorkoutId = null;
+let libraryReturnTarget = null;
+let screenStack = [];
+
+function showScreen(id, push = true) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  document.getElementById('back-btn').style.display = id === 'home' ? 'none' : 'inline-block';
+  const titles = {
+    'home': 'Yuval Fitness', 'new-workout': 'New Workout', 'my-workouts': 'My Workouts',
+    'editor': 'Workout', 'library': 'Exercise Library', 'settings': 'Settings'
+  };
+  document.getElementById('header-title').textContent = titles[id] || 'Yuval Fitness';
+  if (push) screenStack.push(id);
+  if (id === 'my-workouts') renderWorkoutsList();
+  if (id === 'library') renderLibrary();
+}
+
+function goBack() {
+  screenStack.pop();
+  const prev = screenStack.pop() || 'home';
+  showScreen(prev);
+}
+
+function createWorkout() {
+  const name = document.getElementById('new-workout-name').value.trim();
+  if (!name) { alert('Enter a workout name'); return; }
+  const template = document.getElementById('new-workout-template').value;
+  const workouts = load();
+  const workout = { id: Date.now().toString(), name, template, exercises: [] };
+  workouts.push(workout);
+  save(workouts);
+  document.getElementById('new-workout-name').value = '';
+  openEditor(workout.id);
+}
+
+function renderWorkoutsList() {
+  const workouts = load();
+  const el = document.getElementById('workouts-list');
+  if (workouts.length === 0) {
+    el.innerHTML = '<div class="list-empty">No saved workouts yet</div>';
+    return;
+  }
+  el.innerHTML = workouts.map(w =>
+    `<button class="list-item" onclick="openEditor('${w.id}')">${w.name}<br><span style="color:var(--muted); font-size:13px">${w.template}</span></button>`
+  ).join('');
+}
+
+function openEditor(id) {
+  currentWorkoutId = id;
+  showScreen('editor');
+  renderEditor();
+}
+
+function renderEditor() {
+  const workouts = load();
+  const workout = workouts.find(w => w.id === currentWorkoutId);
+  if (!workout) return;
+  document.getElementById('editor-workout-name').textContent = workout.name;
+  const el = document.getElementById('editor-exercise-list');
+  if (workout.exercises.length === 0) {
+    el.innerHTML = '<div class="list-empty">No exercises yet</div>';
+    return;
+  }
+  el.innerHTML = workout.exercises.map((ex, i) => `
+    <div class="exercise-row">
+      <div class="ex-name">
+        <span>${ex.name}</span>
+        <button class="delete-btn" onclick="deleteExercise(${i})">Delete</button>
+      </div>
+      <div class="ex-fields">
+        <div><label>Sets</label><input type="number" value="${ex.sets}" onchange="updateExercise(${i},'sets',this.value)"></div>
+        <div><label>Reps</label><input type="number" value="${ex.reps}" onchange="updateExercise(${i},'reps',this.value)"></div>
+        <div><label>Rest</label><input type="text" value="${ex.rest}" onchange="updateExercise(${i},'rest',this.value)"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateExercise(index, field, value) {
+  const workouts = load();
+  const workout = workouts.find(w => w.id === currentWorkoutId);
+  workout.exercises[index][field] = value;
+  save(workouts);
+}
+
+function deleteExercise(index) {
+  const workouts = load();
+  const workout = workouts.find(w => w.id === currentWorkoutId);
+  workout.exercises.splice(index, 1);
+  save(workouts);
+  renderEditor();
+}
+
+function openLibrary(forWorkoutId) {
+  libraryReturnTarget = forWorkoutId;
+  showScreen('library');
+}
+
+function renderLibrary() {
+  const query = (document.getElementById('search-box').value || '').toLowerCase();
+  const filtered = EXERCISES.filter(e => e.toLowerCase().includes(query));
+  const el = document.getElementById('library-list');
+  el.innerHTML = filtered.map(name =>
+    `<button class="list-item" onclick="addExerciseFromLibrary('${name.replace(/'/g, "\\'")}')">${name}</button>`
+  ).join('');
+}
+
+function addExerciseFromLibrary(name) {
+  if (!libraryReturnTarget) {
+    alert('Open a workout first');
+    return;
+  }
+  const workouts = load();
+  const workout = workouts.find(w => w.id === libraryReturnTarget);
+  workout.exercises.push({ name, sets: 3, reps: 10, rest: '60s' });
+  save(workouts);
+  currentWorkoutId = libraryReturnTarget;
+  screenStack.pop();
+  showScreen('editor', false);
+  renderEditor();
+}
+
+function exportPdf() {
+  const workouts = load();
+  const workout = workouts.find(w => w.id === currentWorkoutId);
+  if (!workout) return;
+  const rows = workout.exercises.map(ex =>
+    `<tr><td>${ex.name}</td><td>${ex.sets}</td><td>${ex.reps}</td><td>${ex.rest}</td></tr>`
+  ).join('');
+  document.getElementById('print-area').innerHTML = `
+    <h1>${workout.name}</h1>
+    <p>Template: ${workout.template}</p>
+    <table style="width:100%; border-collapse: collapse; margin-top:16px">
+      <thead><tr>
+        <th style="text-align:left; border-bottom:1px solid #000; padding:8px">Exercise</th>
+        <th style="text-align:left; border-bottom:1px solid #000; padding:8px">Sets</th>
+        <th style="text-align:left; border-bottom:1px solid #000; padding:8px">Reps</th>
+        <th style="text-align:left; border-bottom:1px solid #000; padding:8px">Rest</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+  window.print();
+}
+
+function clearAllData() {
+  if (confirm('Delete all saved workouts?')) {
+    localStorage.removeItem('yf_workouts');
+    alert('All data cleared');
+  }
+}
+</script>
+</body>
+</html>
