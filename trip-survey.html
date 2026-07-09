@@ -165,6 +165,28 @@
   .copied { color: var(--good); text-align: center; font-size: 13px; margin-top: 8px; min-height: 18px; }
 
   .hidden { display: none !important; }
+
+  /* ---- comparison table ---- */
+  .compare {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+  .compare th, .compare td {
+    padding: 8px 6px;
+    text-align: center;
+    border-bottom: 1px dashed var(--border);
+  }
+  .compare th { font-size: 14px; }
+  .compare td:first-child, .compare th:first-child {
+    text-align: right;
+    color: var(--muted);
+    font-size: 12px;
+    width: 32%;
+  }
+  .compare tr:last-child td { border-bottom: none; }
+  .compare .price { font-weight: 700; color: var(--accent); }
 </style>
 </head>
 <body>
@@ -277,6 +299,26 @@ const QUESTIONS = [
     ]
   },
   {
+    q: "ההכרעה הגדולה 🥊",
+    hint: "לפי מחירי החבילות שבדקנו — לאן לבכם נוטה?",
+    multi: false,
+    compare: `
+      <table class="compare">
+        <tr><th></th><th>🇭🇺 בודפשט</th><th>🇦🇪 דובאי</th></tr>
+        <tr><td>חבילה לזוג (3 לילות)</td><td class="price">‎₪2,500–2,900</td><td class="price">‎₪3,500–4,700</td></tr>
+        <tr><td>רמת מלון בחבילה</td><td>4★ + א. בוקר</td><td>4–5★ + א. בוקר</td></tr>
+        <tr><td>מזג אוויר בינואר</td><td>‎~0° ❄️ חורף אמיתי</td><td>‎~25° ☀️ קיץ מושלם</td></tr>
+        <tr><td>משך טיסה</td><td>‎~4 שעות</td><td>‎~3.5 שעות</td></tr>
+        <tr><td>הקטע שלה</td><td>מרחצאות חמים, גולאש, רובע היהודי</td><td>קניונים, חופים, ברים על גורדי שחקים</td></tr>
+        <tr><td>עונה</td><td>שפל — מחירי רצפה</td><td>שיא — יקר אבל שווה</td></tr>
+      </table>`,
+    opts: [
+      ["🇭🇺", "בודפשט — חורף רומנטי וזול"],
+      ["🇦🇪", "דובאי — שמש ופינוק בשיא ינואר"],
+      ["🤷", "עדיין מתלבטים — נחליט לפי הדיל"]
+    ]
+  },
+  {
     q: "עוד משהו חשוב?",
     hint: "בקשות מיוחדות, חלומות, וטו... (לא חובה)",
     multi: false,
@@ -301,6 +343,8 @@ function render() {
   stepLabel.textContent = "שאלה " + (step + 1) + " מתוך " + QUESTIONS.length;
 
   let html = "<h2>" + item.q + "</h2><div class='hint'>" + item.hint + "</div>";
+
+  if (item.compare) html += item.compare;
 
   if (item.free) {
     html += "<textarea id='free' placeholder='כתבו כאן...'>" + freeText + "</textarea>";
