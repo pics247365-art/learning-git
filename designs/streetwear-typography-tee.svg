@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1500" width="1200" height="1500">
+  <!--
+    Minimalist streetwear tee graphic — typography only.
+    Line 1: clean modern sans-serif. Line 2: raw typewriter, hand-typed baseline.
+    Print-ready 4:5 portrait, single solid background, two inks.
+  -->
+
+  <!-- blank solid background -->
+  <rect width="1200" height="1500" fill="#EFEBE2"/>
+
+  <g fill="#141414">
+
+    <!-- top registration mark, small and quiet -->
+    <text x="600" y="330"
+          font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+          font-size="26" font-weight="500" letter-spacing="14"
+          text-anchor="middle">EST.&#160;NOWHERE</text>
+    <line x1="470" y1="368" x2="730" y2="368" stroke="#141414" stroke-width="3"/>
+
+    <!-- LINE 1 — clean modern sans-serif -->
+    <text x="600" y="760"
+          font-family="'Helvetica Neue', Helvetica, Arial, sans-serif"
+          font-size="168" font-weight="800" letter-spacing="-6"
+          text-anchor="middle">PERFECTION</text>
+
+    <!-- LINE 2 — raw typewriter, each strike lands slightly off -->
+    <g font-family="'Courier New', Courier, monospace" font-size="76" font-weight="700">
+      <text x="600" y="880" text-anchor="middle" transform="rotate(-1.2 600 880)">
+        <tspan dy="3">i</tspan><tspan dy="-5">s</tspan><tspan dx="12" dy="4">&#160;</tspan><tspan dy="-2">b</tspan><tspan dy="5" opacity="0.82">o</tspan><tspan dy="-6">r</tspan><tspan dy="2">i</tspan><tspan dy="-3" opacity="0.88">n</tspan><tspan dy="6">g</tspan><tspan dy="-4">.</tspan>
+      </text>
+      <!-- ghost double-strike, the ribbon hit twice -->
+      <text x="602" y="882" text-anchor="middle" opacity="0.16" transform="rotate(-1.2 600 880)">
+        <tspan dy="3">i</tspan><tspan dy="-5">s</tspan><tspan dx="12" dy="4">&#160;</tspan><tspan dy="-2">b</tspan><tspan dy="5">o</tspan><tspan dy="-6">r</tspan><tspan dy="2">i</tspan><tspan dy="-3">n</tspan><tspan dy="6">g</tspan><tspan dy="-4">.</tspan>
+      </text>
+    </g>
+
+    <!-- footer strike, typed correction -->
+    <text x="600" y="1180"
+          font-family="'Courier New', Courier, monospace"
+          font-size="30" font-weight="700" letter-spacing="6"
+          text-anchor="middle" transform="rotate(0.8 600 1180)">[ no&#160;revisions ]</text>
+
+  </g>
+</svg>
