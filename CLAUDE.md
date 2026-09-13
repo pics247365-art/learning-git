@@ -4,10 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-Two separate projects live here:
+One project lives here:
 
 1. **RTL Adaptive** — a Chrome browser extension that lets users pick any element on any website and apply adaptive RTL/LTR direction to it.
-2. **puzzle-roxy.html** — a standalone 64-piece mobile puzzle game (no dependencies, open directly in a browser).
 
 ## RTL Adaptive — Chrome extension
 
@@ -63,11 +62,3 @@ The repo currently holds only the UI shell. The extension needs these files to f
 
 Fonts: **DM Sans** (UI text) and **DM Mono** (selectors, host labels) — loaded from Google Fonts in `popup.css`.
 
-## Puzzle Roxy (`puzzle-roxy.html`)
-
-Single self-contained HTML file. No dependencies, no build step.
-
-- 8×8 grid (64 pieces) built from an embedded base64 JPEG of Roxy.
-- Tap a piece to select (gold outline), tap another to swap.
-- "📷 תמונה שלי" button lets the user replace the image from their device gallery.
-- To update Roxy's photo: convert a new JPEG to base64 (`base64 -w 0 photo.jpg`) and replace the `ROXY_B64` string constant in the `<script>` block.
