@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "RTL Adaptive",
+  "version": "1.0.0",
+  "description": "Pick any element on any website and apply adaptive RTL/LTR direction to it.",
+  "permissions": ["storage", "activeTab"],
+  "action": {
+    "default_title": "RTL Adaptive",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

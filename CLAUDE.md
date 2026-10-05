@@ -18,16 +18,6 @@ No build step. Load directly in Chrome:
 
 After any code change, click the reload (↺) button on the extension card.
 
-### Missing files (not yet committed)
-
-The repo currently holds only the UI shell. The extension needs these files to function:
-
-| File | Purpose |
-|---|---|
-| `manifest.json` | Extension manifest (permissions, content scripts, popup declaration) |
-| `popup.js` | Logic for the popup — renders block list, handles pick/toggle/rename/delete/export/import |
-| `content.js` | Content script injected into every page — element picker, RTL transformation engine, toast display |
-
 ### Architecture
 
 **Popup** (`popup.html` + `popup.css` + `popup.js`):
@@ -38,7 +28,7 @@ The repo currently holds only the UI shell. The extension needs these files to f
 
 **Content script** (`content.js` + `content.css`):
 - Injected into every page. Listens for messages from the popup.
-- Picker mode: adds `.rtla-hover` outline on `mouseover`, captures click → generates a unique CSS selector → sends back to popup → stored in `chrome.storage.sync`.
+- Picker mode: adds `.rtla-hover` outline on `mouseover`, captures click → generates a unique CSS selector → content script itself saves it to `chrome.storage.sync` (the popup closes on page click, so it can't receive the result) and handles containment.
 - Applies RTL rules to stored selectors on page load/update.
 - Toast notifications use `.rtla-toast` / `.rtla-toast--visible` CSS classes.
 
